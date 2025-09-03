@@ -6,8 +6,6 @@ export class DataManager {
   private ohlcCache = new Map<number, { d: OhlcData[]; v: HistogramData[] }>() // tfSec → 聚合缓存
   private singleCache = new Map<string, SingleValueData[]>() // `${tfSec}:${method}` → 单值缓存
 
-  constructor(private baseTfSec: number) {}
-
   setBaseBars(bars: ChartData[]) {
     this.base = bars.slice()
     this.ohlcCache.clear()

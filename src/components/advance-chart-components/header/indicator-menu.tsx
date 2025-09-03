@@ -3,10 +3,23 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SquareFunction } from "lucide-react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../ui/command"
+import { useTranslation } from "react-i18next"
 
 export const IndicatorMenu: React.FC = () => {
   const [open, setOpen] = React.useState(false)
   const [label, setLabel] = React.useState<string>("")
+  const { t } = useTranslation()
+
+  // Derive a stable i18n key from label text. Prefer the English name in parentheses if present.
+  const toIndicatorKey = React.useCallback((raw: string) => {
+    const m = raw.match(/\(([^)]+)\)/)
+    const base = (m ? m[1] : raw).toLowerCase()
+    return base
+      .replace(/[’'`]/g, "") // remove quotes
+      .replace(/[^a-z0-9]+/g, "_") // non-alphanumerics to underscore
+      .replace(/^_+|_+$/g, "") // trim underscores
+  }, [])
+
   const labels = React.useMemo(
     () => [
       "52 Week High/Low",
@@ -124,28 +137,33 @@ export const IndicatorMenu: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm">
           <SquareFunction className="h-5 w-5" />
-          指标
+          {t('chart.header.indicator')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>指标</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('chart.header.indicatorMenu.title')}</DropdownMenuLabel>
         <Command>
-          <CommandInput placeholder="Filter label..." autoFocus={true} className="h-9" />
+          <CommandInput placeholder={t('chart.header.indicatorMenu.searchPlaceholder')} autoFocus={true} className="h-9" />
           <CommandList>
-            <CommandEmpty>No label found.</CommandEmpty>
+            <CommandEmpty>{t('chart.header.indicatorMenu.empty')}</CommandEmpty>
             <CommandGroup>
-              {labels.map((label) => (
-                <CommandItem
-                  key={label}
-                  value={label}
-                  onSelect={(value) => {
-                    setLabel(value)
-                    setOpen(false)
-                  }}
-                >
-                  {label}
-                </CommandItem>
-              ))}
+              {labels.map((raw) => {
+                const key = toIndicatorKey(raw)
+                const display = t(`chart.indicators.${key}`, { defaultValue: raw })
+                return (
+                  <CommandItem
+                    key={key || raw}
+                    // Use both the raw and translated text to improve search matching
+                    value={`${raw} ${display}`}
+                    onSelect={() => {
+                      setLabel(display)
+                      setOpen(false)
+                    }}
+                  >
+                    {display}
+                  </CommandItem>
+                )
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

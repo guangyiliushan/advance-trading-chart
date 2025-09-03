@@ -28,7 +28,7 @@ type FooterProps = {
   onAutoModeChange?: (v: boolean) => void;
 };
 
-export const Footer: React.FC<FooterProps> = ({ theme, rangeSpan, onRangeSpanChange, autoMode, onAutoModeChange }) => {
+export const Footer: React.FC<FooterProps> = ({ theme, rangeSpan, onRangeSpanChange, autoMode = true, onAutoModeChange }) => {
   const textColor = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
   const bgColor = theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200';
   const buttonClass = cn('px-2 py-1 text-sm', textColor, bgColor);

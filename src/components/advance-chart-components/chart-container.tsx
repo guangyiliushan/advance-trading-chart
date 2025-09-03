@@ -70,12 +70,16 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
       onTimeframeChange(v)
       onRangeSpanChange(null)
     }, [onTimeframeChange, onRangeSpanChange])
-    // Footer 选择范围：应用到图表可见范围，并在能对应到时间间隔时同步 Header，同时关闭自动模式
+
+    // Footer 选择范围：应用到图表可见范围，并在能对应到时间间隔时同步 Header
     const handleFooterRangeChange = React.useCallback((span: string) => {
-      setAutoMode(false)
       onRangeSpanChange(span)
       // 将范围应用到图表
       chartRef.current?.setVisibleRange(span)
+      // 如果当前为自动模式，确保跟随到最新
+      if (autoMode) {
+        chartRef.current?.goLive()
+      }
       // 根据范围选择一个合理的单根K线时间宽度以同步 Header
       const spanToTimeframe: Record<string, string> = {
         '1h': '1m',
@@ -92,19 +96,22 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
       if (tf) {
         onTimeframeChange(tf)
       }
-    }, [onRangeSpanChange, onTimeframeChange])
+    }, [onRangeSpanChange, onTimeframeChange, autoMode])
 
-    // 切换自动模式
+    // 切换自动模式：开启时不清空固定范围；若存在用户指定的范围，则用该范围锚定到最新；否则回退为 goLive + fitContent
     const handleAutoModeChange = React.useCallback((v: boolean) => {
       setAutoMode(v)
       if (v) {
-        // 开启自动：清空固定范围，回到最新并自适应
-        onRangeSpanChange(null)
-        chartRef.current?.goLive()
-        chartRef.current?.fitContent()
+        if (rangeSpan) {
+          chartRef.current?.setVisibleRange(rangeSpan)
+          chartRef.current?.goLive()
+        } else {
+          chartRef.current?.goLive()
+          chartRef.current?.fitContent()
+        }
       }
       // 关闭自动：不做额外处理，保持当前可见范围，允许自由移动
-    }, [onRangeSpanChange])
+    }, [rangeSpan])
 
     // 新增：图表类型本地状态
     const [chartType, setChartType] = React.useState<ChartTypeStr>("Candlestick")

@@ -1,4 +1,66 @@
 {
-  "hello": "你好",
-  "world": "世界"
+  "common": {
+    "language": {
+      "select": "Select Language",
+      "en": "English",
+      "zh": "Simplified Chinese"
+    }
+  },
+  "chart": {
+    "header": {
+      "selectPair": "Select Pair",
+      "dark": "Dark",
+      "resetView": "Reset View",
+      "goLive": "Go Live",
+      "settings": "Settings",
+      "fullscreen": "Fullscreen",
+      "exportImage": "Export Image",
+      "indicator": "Indicators",
+      "indicatorMenu": {
+        "title": "Indicators",
+        "searchPlaceholder": "Filter indicators...",
+        "empty": "No indicators found."
+      },
+      "timeframe": {
+        "placeholder": "Select timeframe",
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days",
+        "_1d": "1 day",
+        "_1w": "1 week",
+        "_1M": "1 month",
+        "_1y": "1 year"
+      }
+    },
+    "settings": {
+      "autoFit": "Auto (fit data to screen)",
+      "lockPriceToCandle": "Lock price to candle ratio",
+      "scaleOnlyPrice": "Scale price chart only",
+      "invertPriceAxis": "Invert price axis",
+      "scaleMode": {
+        "regular": "Regular",
+        "percent": "Percent",
+        "base100": "Base 100",
+        "log": "Log"
+      },
+      "moveAxisLeft": "Move axis to left",
+      "labels": {
+        "title": "Labels",
+        "symbolName": "Symbol name label",
+        "lastPrice": "Last price label",
+        "highLow": "High/Low label",
+        "indicatorName": "Indicator name label",
+        "indicatorValue": "Indicator value label",
+        "noOverlap": "No overlap labels"
+      },
+      "lines": {
+        "title": "Lines",
+        "priceLine": "Price line",
+        "highLowLine": "High/Low line"
+      },
+      "countdownKLine": "Countdown to current candle end",
+      "plusButton": "+ button",
+      "settings": "Settings"
+    }
+  }
 }

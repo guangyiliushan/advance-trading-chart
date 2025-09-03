@@ -1,4 +1,66 @@
 {
-  "hello": "你好",
-  "world": "世界"
+  "common": {
+    "language": {
+      "select": "选择语言",
+      "en": "英语",
+      "zh": "简体中文"
+    }
+  },
+  "chart": {
+    "header": {
+      "selectPair": "选择交易对",
+      "dark": "深色",
+      "resetView": "重置视图",
+      "goLive": "回到最新",
+      "settings": "设置",
+      "fullscreen": "全屏",
+      "exportImage": "导出图片",
+      "indicator": "指标",
+      "indicatorMenu": {
+        "title": "指标",
+        "searchPlaceholder": "筛选指标...",
+        "empty": "未找到相关指标"
+      },
+      "timeframe": {
+        "placeholder": "选择周期",
+        "minutes": "分钟",
+        "hours": "小时",
+        "days": "天",
+        "_1d": "1 天",
+        "_1w": "1 周",
+        "_1M": "1 月",
+        "_1y": "1 年"
+      }
+    },
+    "settings": {
+      "autoFit": "自动(调整数据适于屏幕)",
+      "lockPriceToCandle": "锁定价格对K线比例",
+      "scaleOnlyPrice": "仅缩放价格图表",
+      "invertPriceAxis": "翻转价格坐标",
+      "scaleMode": {
+        "regular": "常规",
+        "percent": "百分比",
+        "base100": "基准100",
+        "log": "对数"
+      },
+      "moveAxisLeft": "将坐标移至左侧",
+      "labels": {
+        "title": "标签",
+        "symbolName": "商品名称标签",
+        "lastPrice": "商品最新价格标签",
+        "highLow": "高低价标签",
+        "indicatorName": "指标名称标签",
+        "indicatorValue": "指标值标签",
+        "noOverlap": "无重叠标签"
+      },
+      "lines": {
+        "title": "线条",
+        "priceLine": "价格线",
+        "highLowLine": "高低价线"
+      },
+      "countdownKLine": "当前K线结束倒计时",
+      "plusButton": "加号按钮",
+      "settings": "设置"
+    }
+  }
 }
