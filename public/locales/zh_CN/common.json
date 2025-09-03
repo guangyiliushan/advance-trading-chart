@@ -21,6 +21,18 @@
         "searchPlaceholder": "筛选指标...",
         "empty": "未找到相关指标"
       },
+      "chartType": {
+        "title": "图表类型",
+        "ariaLabel": "图表类型：{{type}}",
+        "options": {
+          "Area": "面积图",
+          "Bar": "柱状图",
+          "Baseline": "基线图",
+          "Candlestick": "K线图",
+          "Histogram": "直方图",
+          "Line": "折线图"
+        }
+      },
       "timeframe": {
         "placeholder": "选择周期",
         "minutes": "分钟",

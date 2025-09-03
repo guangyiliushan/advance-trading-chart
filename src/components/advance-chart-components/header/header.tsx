@@ -22,11 +22,8 @@ export type HeaderProps = {
   onTimeframeChange: (v: string) => void
   onFitContent?: () => void
   onGoLive?: () => void
-  // 外部传入的交易对选项
   symbolOptions?: Array<{ value: string; label?: string }> | string[]
-  // 新增：全屏切换
   onToggleFullscreen?: () => void
-  // 新增：图表类型切换
   chartType: ChartTypeStr
   onChartTypeChange: (v: ChartTypeStr) => void
 }

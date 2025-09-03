@@ -21,6 +21,18 @@
         "searchPlaceholder": "Filter indicators...",
         "empty": "No indicators found."
       },
+      "chartType": {
+        "title": "Chart Type",
+        "ariaLabel": "Chart Type: {{type}}",
+        "options": {
+          "Area": "Area",
+          "Bar": "Bar",
+          "Baseline": "Baseline",
+          "Candlestick": "Candlestick",
+          "Histogram": "Histogram",
+          "Line": "Line"
+        }
+      },
       "timeframe": {
         "placeholder": "Select timeframe",
         "minutes": "Minutes",
