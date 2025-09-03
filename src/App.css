@@ -1,0 +1,61 @@
+:root {
+  /* Primary up/down colors for charts (light theme) */
+  --chart-up: oklch(0.66 0.14 140); /* 明亮的股票上涨绿 */
+  --chart-down: oklch(0.58 0.22 25); /* 典型的股票下跌红 */
+
+  /* Candle details */
+  --chart-candle-wick-up: oklch(0.66 0.14 140);
+  --chart-candle-wick-down: oklch(0.58 0.22 25);
+  --chart-candle-border-up: oklch(0.66 0.14 140);
+  --chart-candle-border-down: oklch(0.58 0.22 25);
+
+  /* Line series */
+  --chart-line-color: oklch(0.68 0.16 240); /* 温暖的橙色，作为对比线条 */
+
+  /* Area series */
+  --chart-area-line: oklch(0.56 0.12 240); /* 清爽的蓝色 */
+  --chart-area-top: oklch(0.56 0.12 240 / 0.28); /* 顶部填充稍微饱和些 */
+  --chart-area-bottom: oklch(0.56 0.12 240 / 0.06);
+
+  /* Baseline series (top region = positive, bottom region = negative) */
+  --chart-baseline-top-line: oklch(0.66 0.14 140);
+  --chart-baseline-bottom-line: oklch(0.58 0.22 25);
+  --chart-baseline-top-fill1: oklch(0.66 0.14 140 / 0.48);
+  --chart-baseline-top-fill2: oklch(0.66 0.14 140 / 0.08);
+  --chart-baseline-bottom-fill1: oklch(0.58 0.22 25 / 0.48);
+  --chart-baseline-bottom-fill2: oklch(0.58 0.22 25 / 0.08);
+
+  /* Histogram series (standalone; volume histogram in chart uses --muted-foreground) */
+  --chart-histogram-color: oklch(0.62 0.16 220); /* 明亮的青蓝色，适合作为柱状图 */
+}
+
+.dark {
+  /* Primary up/down colors for charts (dark theme) */
+  --chart-up: oklch(0.74 0.18 140); /* 深色主题下更亮的绿 */
+  --chart-down: oklch(0.70 0.24 25); /* 深色主题下更鲜艳的红 */
+
+  /* Candle details */
+  --chart-candle-wick-up: oklch(0.74 0.18 140);
+  --chart-candle-wick-down: oklch(0.70 0.24 25);
+  --chart-candle-border-up: oklch(0.74 0.18 140);
+  --chart-candle-border-down: oklch(0.70 0.24 25);
+
+  /* Line series */
+  --chart-line-color: oklch(0.68 0.16 240); 
+
+  /* Area series */
+  --chart-area-line: oklch(0.68 0.16 240 / 0.70); /* 深色主题下的明亮蓝 */
+  --chart-area-top: oklch(0.68 0.16 240 / 0.30);
+  --chart-area-bottom: oklch(0.68 0.16 240 / 0.07);
+
+  /* Baseline series */
+  --chart-baseline-top-line: oklch(0.74 0.18 140);
+  --chart-baseline-bottom-line: oklch(0.70 0.24 25);
+  --chart-baseline-top-fill1: oklch(0.74 0.18 140 / 0.56);
+  --chart-baseline-top-fill2: oklch(0.74 0.18 140 / 0.10);
+  --chart-baseline-bottom-fill1: oklch(0.70 0.24 25 / 0.56);
+  --chart-baseline-bottom-fill2: oklch(0.70 0.24 25 / 0.10);
+
+  /* Histogram series */
+  --chart-histogram-color: oklch(0.70 0.18 210); /* 深色主题下的亮青色 */
+}
