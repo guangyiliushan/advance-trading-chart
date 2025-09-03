@@ -2,7 +2,7 @@ import React from "react";
 import { Footer } from "./footer";
 
 export default {
-  title: "Chart/Footer",
+  title: "AdvanceChart/Footer",
   component: Footer,
 };
 

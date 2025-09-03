@@ -2,7 +2,7 @@ import React from "react";
 import { IndicatorMenu } from "./indicator-menu";
 
 export default {
-  title: "Chart/IndicatorMenu",
+  title: "AdvanceChart/Header/Left/IndicatorMenu",
   component: IndicatorMenu,
 };
 

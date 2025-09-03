@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import VisibleRangeSelector, { VisibleRangeSelectorProps } from './visible-range-selector';
+import VisibleRangeSelector from './visible-range-selector';
+import type { VisibleRangeSelectorProps } from './visible-range-selector';
 
 export type FooterLeftProps = {
   className?: string;

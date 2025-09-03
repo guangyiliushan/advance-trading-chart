@@ -41,7 +41,7 @@ export const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
   value = 'UTC',
   onChange,
   showTime = true,
-  showSelector = false,
+  showSelector = true,
   className,
 }) => {
   const textColor = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
@@ -63,25 +63,40 @@ export const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
     onChange?.(v);
   };
 
-  return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {showTime && (
+  // 如果不显示选择器，只显示时间
+  if (!showSelector && showTime) {
+    return (
+      <div className={cn('flex items-center', className)}>
         <span className={textColor}>{now} ({tz})</span>
-      )}
-      {showSelector && (
-        <Select value={tz} onValueChange={handleChange}>
-          <SelectTrigger size="sm" aria-label="timezone selector" className="min-w-44">
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('flex items-center', className)}>
+      <Select value={tz} onValueChange={handleChange}>
+        <SelectTrigger 
+          size="sm" 
+          aria-label="timezone selector" 
+          className={cn("min-w-44", showTime ? "flex items-center justify-between" : "")}
+        >
+          {showTime ? (
+            <div className="flex items-center gap-1 overflow-hidden">
+              <span className={textColor}>{now}</span>
+              <span className={textColor}>({tz})</span>
+            </div>
+          ) : (
             <SelectValue placeholder="Select Timezone" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIMEZONES.map((z) => (
-              <SelectItem key={z.value} value={z.value}>
-                {z.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+          )}
+        </SelectTrigger>
+        <SelectContent>
+          {TIMEZONES.map((z) => (
+            <SelectItem key={z.value} value={z.value}>
+              {z.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

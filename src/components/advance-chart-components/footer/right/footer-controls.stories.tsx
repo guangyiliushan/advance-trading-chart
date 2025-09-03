@@ -4,7 +4,7 @@ import FooterControls from './footer-controls';
 import type { FooterControlsProps } from './footer-controls';
 
 const meta = {
-  title: 'Chart/Footer/FooterControls',
+  title: 'AdvanceChart/Footer/Right/FooterControls',
   component: FooterControls,
   tags: ['autodocs'],
   parameters: {

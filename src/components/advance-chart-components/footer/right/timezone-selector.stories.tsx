@@ -4,7 +4,7 @@ import TimezoneSelector from './timezone-selector';
 import type { TimezoneSelectorProps } from './timezone-selector';
 
 const meta = {
-  title: 'Chart/Footer/TimezoneSelector',
+  title: 'AdvanceChart/Footer/Right/TimezoneSelector',
   component: TimezoneSelector,
   tags: ['autodocs'],
   parameters: {

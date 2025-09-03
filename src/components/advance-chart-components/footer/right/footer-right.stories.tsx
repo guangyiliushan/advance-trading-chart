@@ -4,7 +4,7 @@ import FooterRight from './footer-right';
 import type { FooterRightProps } from './footer-right';
 
 const meta = {
-  title: 'Chart/Footer/FooterRight',
+  title: 'AdvanceChart/Footer/FooterRight',
   component: FooterRight,
   tags: ['autodocs'],
   parameters: {

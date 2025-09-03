@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import VisibleRangeSelector from './visible-range-selector';
+import type {VisibleRangeSelectorProps} from './visible-range-selector';
 import { ThemeProvider } from '@/theme-provider';
 
 const meta: Meta<typeof VisibleRangeSelector> = {
-  title: 'AdvanceChart/Footer/VisibleRangeSelector',
+  title: 'AdvanceChart/Footer/Left/VisibleRangeSelector',
   component: VisibleRangeSelector,
   parameters: {
     layout: 'centered',

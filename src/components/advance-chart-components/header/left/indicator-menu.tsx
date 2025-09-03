@@ -2,7 +2,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SquareFunction } from "lucide-react"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../ui/command"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../../../ui/command"
 import { useTranslation } from "react-i18next"
 
 export const IndicatorMenu: React.FC = () => {

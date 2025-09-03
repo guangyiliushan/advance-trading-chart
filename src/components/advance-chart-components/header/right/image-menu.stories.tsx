@@ -2,7 +2,7 @@ import React from "react";
 import { ImageMenu } from "./image-menu";
 
 export default {
-  title: "Chart/ImageMenu",
+  title: "AdvanceChart/Header/Right/ImageMenu",
   component: ImageMenu,
 };
 

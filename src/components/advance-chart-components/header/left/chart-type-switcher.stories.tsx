@@ -3,7 +3,7 @@ import { ChartTypeSwitcher } from "./chart-type-switcher";
 import type { ChartTypeStr } from "@/lib/types";
 
 export default {
-  title: "Chart/ChartTypeSwitcher",
+  title: "AdvanceChart/Header/Left/ChartTypeSwitcher",
   component: ChartTypeSwitcher,
 };
 
