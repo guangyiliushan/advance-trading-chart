@@ -8,7 +8,7 @@ const mockData: ChartData[] = [
 ];
 
 export default {
-  title: "Chart/TradingChart",
+  title: "AdvanceChart/Main/Chart/TradingChart",
   component: TradingChart,
 };
 

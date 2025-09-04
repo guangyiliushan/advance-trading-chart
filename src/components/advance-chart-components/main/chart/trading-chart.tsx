@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useRef, useImperativeHandle, useState } from "react"
-import { createChart, ColorType, CandlestickSeries, HistogramSeries, LineSeries, AreaSeries, BaselineSeries, BarSeries, CrosshairMode } from "lightweight-charts"
+import { createChart, ColorType, CrosshairMode, HistogramSeries } from "lightweight-charts"
 import type { IChartApi, ISeriesApi, Time } from "lightweight-charts"
 import { parseSpanSec, toUnixSeconds } from "@/lib/chart-tools"
 import type { ChartData, ChartTypeStr } from '@/lib/types'
@@ -10,6 +10,7 @@ import { getCssVariableRgb } from "@/lib/chart-color-tools"
 import { PriceLegendOverlay } from "./price-legend-overlay"
 import { cn } from '@/lib/utils'
 import { CrosshairTooltip } from './crosshair-tooltip'
+import { getLayoutColors, getConvertChartOptions, createMainSeries } from "./lib/chart-init"
 
 export type TradingChartProps = {
   data: ChartData[]
@@ -17,8 +18,8 @@ export type TradingChartProps = {
   className?: string
   symbol?: string
   chartType?: ChartTypeStr
-  // 新增：是否启用自动模式（自动缩放/跟随最新）。关闭后不再在数据变化时自动fitContent。
   autoMode?: boolean
+  enableCrosshairTooltip?: boolean
 }
 
 // 对外暴露的实例方法
@@ -31,7 +32,7 @@ export type TradingChartHandle = {
 
 
 export const TradingChart = React.forwardRef(
-  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
+  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip = false }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
     const containerRef = useRef<HTMLDivElement | null>(null)
     const chartRef = useRef<IChartApi | null>(null)
     const [chartApi, setChartApi] = useState<IChartApi | null>(null)
@@ -45,44 +46,11 @@ export const TradingChart = React.forwardRef(
     // Track data/memo changes to guard fallback scheduling
     const dataVersionRef = useRef(0)
 
-    const layoutColors = useMemo(() => ({
-      background: getCssVariableRgb('--background'),
-      grid: getCssVariableRgb('--border'),
-      text: getCssVariableRgb('--foreground'),
-      up: getCssVariableRgb('--chart-up'),
-      down: getCssVariableRgb('--chart-down'),
-      areaLine: getCssVariableRgb('--chart-area-line'),
-      areaTop: getCssVariableRgb('--chart-area-top'),
-      areaBottom: getCssVariableRgb('--chart-area-bottom'),
-      baselineTopLine: getCssVariableRgb('--chart-baseline-top-line'),
-      baselineBottomLine: getCssVariableRgb('--chart-baseline-bottom-line'),
-      baselineTopFill1: getCssVariableRgb('--chart-baseline-top-fill1'),
-      baselineTopFill2: getCssVariableRgb('--chart-baseline-top-fill2'),
-      baselineBottomFill1: getCssVariableRgb('--chart-baseline-bottom-fill1'),
-      baselineBottomFill2: getCssVariableRgb('--chart-baseline-bottom-fill2'),
-      lineColor: getCssVariableRgb('--chart-line-color'),
-    }), [dark])
+    const layoutColors = useMemo(() => getLayoutColors(), [dark])
 
     // Memoize transformed series data for performance and single-source-of-truth
     const memoData = useMemo(() => {
-      const { chartData, volumes } = convertChartData(data, chartType, {
-        upColor: layoutColors.up,
-        downColor: layoutColors.down,
-        lineColor: layoutColors.lineColor,
-        color: layoutColors.lineColor,
-        topColor: layoutColors.areaTop,
-        bottomColor: layoutColors.areaBottom,
-        topLineColor: layoutColors.baselineTopLine,
-        bottomLineColor: layoutColors.baselineBottomLine,
-        topFillColor1: layoutColors.baselineTopFill1,
-        topFillColor2: layoutColors.baselineTopFill2,
-        bottomFillColor1: layoutColors.baselineBottomFill1,
-        bottomFillColor2: layoutColors.baselineBottomFill2,
-        wickUpColor: getCssVariableRgb('--chart-candle-wick-up'),
-        wickDownColor: getCssVariableRgb('--chart-candle-wick-down'),
-        borderUpColor: getCssVariableRgb('--chart-candle-border-up'),
-        borderDownColor: getCssVariableRgb('--chart-candle-border-down'),
-      })
+      const { chartData, volumes } = convertChartData(data, chartType, getConvertChartOptions(layoutColors))
       return { chartData, volumes }
     }, [data, chartType, layoutColors])
 
@@ -133,81 +101,8 @@ export const TradingChart = React.forwardRef(
       setChartApi(chart)
 
       // Create main series based on chart type
-      let mainSeries: ISeriesApi<any>
-      switch (chartType) {
-        case 'Candlestick':
-          mainSeries = chart.addSeries(CandlestickSeries, {
-            upColor: layoutColors.up,
-            downColor: layoutColors.down,
-            borderVisible: false,
-            wickUpColor: getCssVariableRgb('--chart-candle-wick-up'),
-            wickDownColor: getCssVariableRgb('--chart-candle-wick-down'),
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          break
-        case 'Bar':
-          mainSeries = chart.addSeries(BarSeries, {
-            upColor: layoutColors.up,
-            downColor: layoutColors.down,
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          break
-        case 'Line':
-          mainSeries = chart.addSeries(LineSeries, {
-            color: layoutColors.lineColor,
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          break
-        case 'Area':
-          mainSeries = chart.addSeries(AreaSeries, {
-            lineColor: layoutColors.areaLine,
-            topColor: layoutColors.areaTop,
-            bottomColor: layoutColors.areaBottom,
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          break
-        case 'Baseline':
-          mainSeries = chart.addSeries(BaselineSeries, {
-            topLineColor: layoutColors.baselineTopLine,
-            bottomLineColor: layoutColors.baselineBottomLine,
-            topFillColor1: layoutColors.baselineTopFill1,
-            topFillColor2: layoutColors.baselineTopFill2,
-            bottomFillColor1: layoutColors.baselineBottomFill1,
-            bottomFillColor2: layoutColors.baselineBottomFill2,
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          break
-        case 'Histogram':
-          mainSeries = chart.addSeries(HistogramSeries, {
-            color: layoutColors.up,
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-          mainSeries.setData(memoData.chartData)
-          break
-        default:
-          mainSeries = chart.addSeries(CandlestickSeries, {
-            upColor: layoutColors.up,
-            downColor: layoutColors.down,
-            borderVisible: false,
-            wickUpColor: getCssVariableRgb('--chart-candle-wick-up'),
-            wickDownColor: getCssVariableRgb('--chart-candle-wick-down'),
-            priceScaleId: "right",
-            lastValueVisible: true,
-            priceLineVisible: true,
-          })
-      }
+      const mainSeries = createMainSeries(chart, chartType, layoutColors, memoData.chartData)
+
       mainSeriesRef.current = mainSeries
 
       const volSeries = chart.addSeries(HistogramSeries, {
@@ -373,14 +268,11 @@ export const TradingChart = React.forwardRef(
     useEffect(() => {
       if (!chartRef.current || !mainSeriesRef.current) return
       if (chartType !== 'Histogram') return
-
       // 初次执行一次
       updateHistogramBase()
-
       const ts = chartRef.current.timeScale()
       const handler = () => updateHistogramBase()
       ts.subscribeVisibleTimeRangeChange(handler)
-
       return () => {
         if (!chartRef.current) return
         chartRef.current.timeScale().unsubscribeVisibleTimeRangeChange(handler)
@@ -499,17 +391,19 @@ export const TradingChart = React.forwardRef(
         )}
 
         {/* Headless component for crosshair tooltip subscription */}
-        <CrosshairTooltip
-          chart={chartApi}
-          data={data}
-          containerRef={containerRef}
-          layoutColors={{ up: layoutColors.up, down: layoutColors.down, text: layoutColors.text }}
-          onHoverBarChange={setHoveredBar}
-          locale="zh-CN"
-          timeZone="UTC"
-          pricePrecision={2}
-          dark={dark}
-        />
+        {enableCrosshairTooltip && (
+          <CrosshairTooltip
+            chart={chartApi}
+            data={data}
+            containerRef={containerRef}
+            layoutColors={{ up: layoutColors.up, down: layoutColors.down, text: layoutColors.text }}
+            onHoverBarChange={setHoveredBar}
+            locale="zh-CN"
+            timeZone="UTC"
+            pricePrecision={2}
+            dark={dark}
+          />
+        )}
       </div>
     )
   }

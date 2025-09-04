@@ -4,7 +4,7 @@ import { HeaderRight, type HeaderRightProps } from './header-right'
 import { ThemeProvider } from '@/theme-provider'
 
 const meta: Meta<typeof HeaderRight> = {
-  title: 'AdvanceChart/Header/Right/HeaderRight',
+  title: 'AdvanceChart/Header/HeaderRight',
   component: HeaderRight,
 }
 export default meta

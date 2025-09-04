@@ -1,11 +1,10 @@
 import * as React from "react"
-import { TradingChart, type TradingChartHandle } from "./chart/trading-chart"
+import type { TradingChartHandle } from "./main/chart/trading-chart"
 import type { ChartData , ChartTypeStr } from '@/lib/types'
 import { Header } from "./header/header"
-import { SettingPanel } from "./chart/setting-panel"
-import { Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Footer } from "./footer/footer"
+import { Main } from "./main/main"
 
 // Add: utility for exiting fullscreen
 const exitFullscreen = () => {
@@ -135,7 +134,7 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
         </div>
         {/* Chart 容器 */}
         <div className="row-span-1 row-start-2 col-start-2 relative flex flex-col">
-          <TradingChart 
+          <Main
             ref={(inst) => {
               chartRef.current = inst
               if (typeof ref === 'function') {
@@ -143,23 +142,14 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
               } else if (ref) {
                 (ref as { current: TradingChartHandle | null }).current = inst
               }
-            }} 
-            data={data} 
-            dark={dark} 
+            }}
+            data={data}
+            dark={dark}
             symbol={symbol}
             chartType={chartType}
             autoMode={autoMode}
-            className="flex-1 w-full" 
+            className="flex-1 w-full"
           />
-          {/* Settings Dropdown Trigger Button */}
-          <SettingPanel>
-            <button 
-              className="absolute bottom-0 right-0 w-[70px] h-[28px] bg-muted text-foreground z-30 flex items-center justify-center"
-              aria-label="Settings"
-            >
-              <Settings className="h-5 w-5" />
-            </button>
-          </SettingPanel>
         </div>
         {/* Footer */}
         <div className="col-span-3 row-span-1 row-start-3">

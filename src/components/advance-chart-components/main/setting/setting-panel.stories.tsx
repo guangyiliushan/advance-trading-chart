@@ -3,7 +3,7 @@ import { SettingPanel } from "./setting-panel";
 import { Button } from "@/components/ui/button";
 
 export default {
-  title: "Chart/SettingPanel",
+  title: "AdvanceChart/Main/Setting/SettingPanel",
   component: SettingPanel,
 };
 

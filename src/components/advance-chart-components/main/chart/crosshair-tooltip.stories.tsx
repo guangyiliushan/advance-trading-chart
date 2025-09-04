@@ -2,7 +2,7 @@ import React from "react";
 import CrosshairTooltip from "./crosshair-tooltip";
 
 export default {
-  title: "Chart/CrosshairTooltip",
+  title: "AdvanceChart/Main/Chart/CrosshairTooltip",
   component: CrosshairTooltip,
 };
 

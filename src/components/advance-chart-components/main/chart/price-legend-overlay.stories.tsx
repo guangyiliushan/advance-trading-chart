@@ -2,7 +2,7 @@ import React from "react";
 import PriceLegendOverlay from "./price-legend-overlay";
 
 export default {
-  title: "Chart/PriceLegendOverlay",
+  title: "AdvanceChart/Main/Chart/PriceLegendOverlay",
   component: PriceLegendOverlay,
 };
 

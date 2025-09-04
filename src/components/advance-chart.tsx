@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { ChartContainer } from '@/components/advance-chart-components/chart-container'
-import type { TradingChartHandle } from '@/components/advance-chart-components/chart/trading-chart'
+import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
 import { generateFromData } from '@/lib/chart-tools'
 import type { ChartData } from '@/lib/types'
 import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/lib/cache-manager'
