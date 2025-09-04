@@ -2,7 +2,8 @@ import * as React from "react"
 import { Settings } from "lucide-react"
 import type { ChartData, ChartTypeStr } from "@/lib/types"
 import { SettingPanel } from "./setting/setting-panel"
-import { TradingChart, type TradingChartHandle } from "./chart/trading-chart"
+import { MainChart } from "./chart/main-chart"
+import type { TradingChartHandle } from "./chart/trading-chart"
 
 export type MainProps = {
   data: ChartData[]
@@ -17,7 +18,7 @@ export const Main = React.forwardRef<TradingChartHandle, MainProps>(
   ({ data, dark, symbol, chartType, autoMode, className }, ref) => {
     return (
       <>
-        <TradingChart
+        <MainChart
           ref={ref}
           data={data}
           dark={dark}

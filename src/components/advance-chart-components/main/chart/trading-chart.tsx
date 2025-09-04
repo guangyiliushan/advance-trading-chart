@@ -7,9 +7,7 @@ import { parseSpanSec, toUnixSeconds } from "@/lib/chart-tools"
 import type { ChartData, ChartTypeStr } from '@/lib/types'
 import { convertChartData } from '@/lib/chart-data'
 import { getCssVariableRgb } from "@/lib/chart-color-tools"
-import { PriceLegendOverlay } from "./price-legend-overlay"
 import { cn } from '@/lib/utils'
-import { CrosshairTooltip } from './crosshair-tooltip'
 import { getLayoutColors, getConvertChartOptions, createMainSeries } from "./lib/chart-init"
 
 export type TradingChartProps = {
@@ -20,6 +18,12 @@ export type TradingChartProps = {
   chartType?: ChartTypeStr
   autoMode?: boolean
   enableCrosshairTooltip?: boolean
+  // 对外暴露 chartApi（供外层装配组件使用）
+  onChartApi?: (api: IChartApi | null) => void
+  // 允许外部传入容器 ref，以便在同一容器中渲染覆盖层
+  containerRef?: React.RefObject<HTMLDivElement | null>
+  // 允许外层将覆盖层作为 children 注入到相同容器中
+  children?: React.ReactNode
 }
 
 // 对外暴露的实例方法
@@ -32,18 +36,15 @@ export type TradingChartHandle = {
 
 
 export const TradingChart = React.forwardRef(
-  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip = false }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
-    const containerRef = useRef<HTMLDivElement | null>(null)
+  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
+    const internalContainerRef = useRef<HTMLDivElement | null>(null)
+    const containerRef = containerRefProp ?? internalContainerRef
     const chartRef = useRef<IChartApi | null>(null)
     const [chartApi, setChartApi] = useState<IChartApi | null>(null)
     const mainSeriesRef = useRef<ISeriesApi<any> | null>(null)
     const volSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
-    const [hoveredBar, setHoveredBar] = useState<ChartData | null>(null)
-    // Track programmatic changes to visible range to avoid auto-fit overriding user choice
     const programmaticRangeUpdate = useRef(false)
-    // Queue a pending range span to apply AFTER latest data replacement
     const pendingSpanRef = useRef<string | null>(null)
-    // Track data/memo changes to guard fallback scheduling
     const dataVersionRef = useRef(0)
 
     const layoutColors = useMemo(() => getLayoutColors(), [dark])
@@ -99,6 +100,7 @@ export const TradingChart = React.forwardRef(
       })
       chartRef.current = chart
       setChartApi(chart)
+      onChartApi?.(chart)
 
       // Create main series based on chart type
       const mainSeries = createMainSeries(chart, chartType, layoutColors, memoData.chartData)
@@ -143,6 +145,7 @@ export const TradingChart = React.forwardRef(
         chart.remove()
         chartRef.current = null
         setChartApi(null)
+        onChartApi?.(null)
         mainSeriesRef.current = null
         volSeriesRef.current = null
       }
@@ -381,29 +384,7 @@ export const TradingChart = React.forwardRef(
         className={cn("h-full w-full", className)}
         style={{ position: "relative" }}
       >
-        {data.length > 0 && (
-          <PriceLegendOverlay
-            symbol={symbol}
-            bar={(hoveredBar ?? (data[data.length - 1] as any))}
-            last={(data[data.length - 1] as any)}
-            layoutColors={{ text: layoutColors.text, up: layoutColors.up, down: layoutColors.down }}
-          />
-        )}
-
-        {/* Headless component for crosshair tooltip subscription */}
-        {enableCrosshairTooltip && (
-          <CrosshairTooltip
-            chart={chartApi}
-            data={data}
-            containerRef={containerRef}
-            layoutColors={{ up: layoutColors.up, down: layoutColors.down, text: layoutColors.text }}
-            onHoverBarChange={setHoveredBar}
-            locale="zh-CN"
-            timeZone="UTC"
-            pricePrecision={2}
-            dark={dark}
-          />
-        )}
+        {children}
       </div>
     )
   }
