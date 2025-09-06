@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChartTypeSwitcher } from "./chart-type-switcher";
-import type { ChartTypeStr } from "@/lib/types";
+import type { ChartTypeStr } from "@/core/types";
 
 export default {
   title: "AdvanceChart/Header/Left/ChartTypeSwitcher",

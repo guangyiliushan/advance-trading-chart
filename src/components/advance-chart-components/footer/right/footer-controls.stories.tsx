@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FooterControls from './footer-controls';
-import type { FooterControlsProps } from './footer-controls';
 
 const meta = {
   title: 'AdvanceChart/Footer/Right/FooterControls',

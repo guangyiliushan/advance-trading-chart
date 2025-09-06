@@ -1,10 +1,10 @@
-import React, { useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ThemeProvider } from '@/theme-provider'
 import { Main } from './main'
 import type { TradingChartHandle } from './chart/trading-chart'
 import { generateFromData } from '@/lib/chart-tools'
-import type { ChartTypeStr } from '@/lib/types'
+import type { ChartTypeStr } from '@/core/types'
 
 const chartTypeOptions: ChartTypeStr[] = [
   'Candlestick',

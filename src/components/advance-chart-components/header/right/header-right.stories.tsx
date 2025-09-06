@@ -1,4 +1,3 @@
-import React from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { HeaderRight, type HeaderRightProps } from './header-right'
 import { ThemeProvider } from '@/theme-provider'

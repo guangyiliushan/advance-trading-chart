@@ -1,6 +1,6 @@
 import * as React from "react"
 import type { TradingChartHandle } from "./main/chart/trading-chart"
-import type { ChartData , ChartTypeStr } from '@/lib/types'
+import type { ChartData , ChartTypeStr } from '@/core/types'
 import { Header } from "./header/header"
 import { cn } from "@/lib/utils"
 import { Footer } from "./footer/footer"

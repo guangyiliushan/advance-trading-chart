@@ -1,6 +1,6 @@
 // Header 组件: 顶部导入区域
 import * as React from "react"
-import type { ChartTypeStr } from '@/lib/types'
+import type { ChartTypeStr } from '@/core/types'
 import { HeaderLeft } from './left/header-left'
 import { HeaderRight } from './right/header-right'
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { IndicatorMenu } from "./indicator-menu";
 
 export default {

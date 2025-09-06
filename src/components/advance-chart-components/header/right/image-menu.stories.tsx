@@ -1,4 +1,3 @@
-import React from "react";
 import { ImageMenu } from "./image-menu";
 
 export default {

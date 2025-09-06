@@ -1,4 +1,3 @@
-import React from "react";
 import CrosshairTooltip from "./crosshair-tooltip";
 
 export default {

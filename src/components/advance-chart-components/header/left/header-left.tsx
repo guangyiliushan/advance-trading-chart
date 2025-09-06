@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { IndicatorMenu } from './indicator-menu'
 import { ChartTypeSwitcher } from './chart-type-switcher'
-import type { ChartTypeStr } from '@/lib/types'
+import type { ChartTypeStr } from '@/core/types'
 import { Tooltip, TooltipContent } from '@/components/ui/tooltip'
 import { TooltipTrigger } from '@radix-ui/react-tooltip'
 import { TimeframeSelect } from './timeframe-select'

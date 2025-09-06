@@ -1,4 +1,3 @@
-import React from "react";
 import LanguageSelector from "./language-selector";
 
 export default {

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CandlestickSeries, HistogramSeries, LineSeries, AreaSeries, BaselineSeries, BarSeries } from 'lightweight-charts'
 import type { IChartApi, ISeriesApi } from 'lightweight-charts'
-import type { ChartTypeStr } from '@/lib/types'
-import { getCssVariableRgb } from '@/lib/chart-color-tools'
+import type { ChartTypeStr } from '@/core/types'
+import { getCssVariableRgb } from '@/core/utils'
 
 export type LayoutColors = {
   background: string

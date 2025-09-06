@@ -1,9 +1,8 @@
-import React from "react";
-import AdvanceChart from "./advance-chart";
+import AdvanceChartDemo from "@/examples/demo/AdvanceChartDemo";
 
 export default {
-  title: "Chart/AdvanceChart",
-  component: AdvanceChart,
+  title: "Gallery/Demos/AdvanceChart",
+  component: AdvanceChartDemo,
 };
 
-export const Default = () => <AdvanceChart />;
+export const Default = () => <AdvanceChartDemo />;

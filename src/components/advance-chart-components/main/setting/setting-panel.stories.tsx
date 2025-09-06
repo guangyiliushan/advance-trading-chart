@@ -1,4 +1,3 @@
-import React from "react";
 import { SettingPanel } from "./setting-panel";
 import { Button } from "@/components/ui/button";
 

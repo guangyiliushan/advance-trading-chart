@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChartCandlestick, ChartArea, ChartBar, ChartLine, ChartColumn, ChartColumnBig, Baseline } from "lucide-react"
-import type { ChartTypeStr } from '@/lib/types'
+import type { ChartTypeStr } from '@/core/types'
 import { useTranslation } from "react-i18next"
 
 type Props = {

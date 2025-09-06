@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import VisibleRangeSelector from './visible-range-selector';
-import type {VisibleRangeSelectorProps} from './visible-range-selector';
 import { ThemeProvider } from '@/theme-provider';
 
 const meta: Meta<typeof VisibleRangeSelector> = {

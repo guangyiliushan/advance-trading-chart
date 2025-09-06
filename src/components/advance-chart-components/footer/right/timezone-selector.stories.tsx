@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import React from 'react';
+
 import TimezoneSelector from './timezone-selector';
-import type { TimezoneSelectorProps } from './timezone-selector';
+
 
 const meta = {
   title: 'AdvanceChart/Footer/Right/TimezoneSelector',

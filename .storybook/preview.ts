@@ -2,6 +2,12 @@ import type { Preview } from '@storybook/react-vite'
 import '../src/index.css';
 import { withThemeByClassName, withThemeByDataAttribute } from '@storybook/addon-themes';
 import i18n from './i18next';
+// MSW: initialize and provide global handlers + loader
+import { initialize, mswLoader } from 'msw-storybook-addon'
+import { handlers as mswHandlers } from './msw/handlers'
+
+// Initialize MSW (uses public/mockServiceWorker.js by default per project config)
+initialize()
 
 const preview: Preview = {
   parameters: {
@@ -18,7 +24,9 @@ const preview: Preview = {
       // 'off' - skip a11y checks entirely
       test: 'todo'
     },
-    i18n
+    i18n,
+    // MSW global handlers (can be overridden per-story)
+    msw: { handlers: mswHandlers },
   },
   initialGlobals: {
     locale: 'zh_CN',
@@ -26,7 +34,9 @@ const preview: Preview = {
       en: {icon: '🇺🇸', title: 'English', right: 'EN'},
       zh_CN: {icon: '🇨🇳', title: '简体中文', right: 'ZH'},
     },
-  }
+  },
+  // Provide the MSW addon loader globally
+  loaders: [mswLoader],
 };
 
 export const decorators = [

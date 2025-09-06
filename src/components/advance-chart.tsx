@@ -3,8 +3,8 @@ import { Card } from '@/components/ui/card'
 import { ChartContainer } from '@/components/advance-chart-components/chart-container'
 import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
 import { generateFromData } from '@/lib/chart-tools'
-import type { ChartData } from '@/lib/types'
-import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/lib/cache-manager'
+import type { ChartData } from '@/core/types'
+import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
 
 // 基于交易对推断一个初始基准价格（仅用于本地 mock 数据）
 function getBaseForSymbol(symbol: string) {

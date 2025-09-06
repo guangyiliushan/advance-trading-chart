@@ -4,7 +4,7 @@ import type { IChartApi } from "lightweight-charts"
 import { TradingChart, type TradingChartHandle, type TradingChartProps } from "./trading-chart"
 import { CrosshairTooltip } from "./crosshair-tooltip"
 import { PriceLegendOverlay } from "./price-legend-overlay"
-import type { ChartData } from "@/lib/types"
+import type { ChartData } from "@/core/types"
 import { getLayoutColors } from "./lib/chart-init"
 
 export type MainChartProps = Omit<TradingChartProps, "containerRef" | "children"> & {

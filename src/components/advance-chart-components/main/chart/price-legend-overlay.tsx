@@ -1,5 +1,5 @@
 import React from "react"
-import type { ChartData } from '@/lib/types'
+import type { ChartData } from '@/core/types'
 
 export type PriceLegendOverlayProps = {
   symbol?: string

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef } from "react"
 import type { IChartApi } from "lightweight-charts"
-import type { ChartData } from '@/lib/types'
-import { getCssVariableRgb } from "@/lib/chart-color-tools"
+import type { ChartData } from '@/core/types'
+import { getCssVariableRgb } from "@/core/utils"
 
 export type CrosshairTooltipProps = {
   chart: IChartApi | null

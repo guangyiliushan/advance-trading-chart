@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 
 export const IndicatorMenu: React.FC = () => {
   const [open, setOpen] = React.useState(false)
-  const [label, setLabel] = React.useState<string>("")
+  const [_label, setLabel] = React.useState<string>("")
   const { t } = useTranslation()
 
   // Derive a stable i18n key from label text. Prefer the English name in parentheses if present.

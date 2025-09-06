@@ -1,4 +1,3 @@
-import React from "react";
 import PriceLegendOverlay from "./price-legend-overlay";
 
 export default {

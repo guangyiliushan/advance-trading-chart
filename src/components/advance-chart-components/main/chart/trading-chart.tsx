@@ -4,9 +4,9 @@ import React, { useEffect, useMemo, useRef, useImperativeHandle, useState } from
 import { createChart, ColorType, CrosshairMode, HistogramSeries } from "lightweight-charts"
 import type { IChartApi, ISeriesApi, Time } from "lightweight-charts"
 import { parseSpanSec, toUnixSeconds } from "@/lib/chart-tools"
-import type { ChartData, ChartTypeStr } from '@/lib/types'
-import { convertChartData } from '@/lib/chart-data'
-import { getCssVariableRgb } from "@/lib/chart-color-tools"
+import type { ChartData, ChartTypeStr } from '@/core/types'
+import { convertChartData } from '@/core/utils'
+import { getCssVariableRgb } from "@/core/utils"
 import { cn } from '@/lib/utils'
 import { getLayoutColors, getConvertChartOptions, createMainSeries } from "./lib/chart-init"
 
@@ -36,11 +36,11 @@ export type TradingChartHandle = {
 
 
 export const TradingChart = React.forwardRef(
-  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
+  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip: _enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
     const internalContainerRef = useRef<HTMLDivElement | null>(null)
     const containerRef = containerRefProp ?? internalContainerRef
     const chartRef = useRef<IChartApi | null>(null)
-    const [chartApi, setChartApi] = useState<IChartApi | null>(null)
+    const [_chartApi, setChartApi] = useState<IChartApi | null>(null)
     const mainSeriesRef = useRef<ISeriesApi<any> | null>(null)
     const volSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
     const programmaticRangeUpdate = useRef(false)

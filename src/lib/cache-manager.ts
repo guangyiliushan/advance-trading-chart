@@ -2,7 +2,7 @@
 // Single-source (base timeframe) + cached aggregations + incremental updates
 
 import { DataManager } from '@/lib/data-manager'
-import type { ChartData, TimeframeSec } from '@/lib/types'
+import type { ChartData, TimeframeSec } from '@/core/types'
 import type { HistogramData, OhlcData } from 'lightweight-charts'
 
 // Helpers: timeframe string <-> seconds
@@ -76,21 +76,21 @@ export class CacheManager {
   private warmTimer: any = null
   private warmupTfs: TimeframeSec[] = []
   private currentSymbol: string | null = null
-  private useWorker = false
 
-  constructor(opts?: { useWorker?: boolean }) {
-    this.useWorker = !!opts?.useWorker
+
+  constructor(_opts?: { useWorker?: boolean }) {
+    // useWorker option is reserved for future implementation
   }
 
   // Initialize or replace base dataset for a symbol
   setBase(symbol: string, bars: ChartData[], baseTfSec: TimeframeSec) {
     let ctx = this.symbolMap.get(symbol)
     if (!ctx) {
-      ctx = { dm: new DataManager(baseTfSec), baseTfSec }
+      ctx = { dm: new DataManager(), baseTfSec }
       this.symbolMap.set(symbol, ctx)
     }
     if (ctx.baseTfSec !== baseTfSec) {
-      ctx.dm = new DataManager(baseTfSec)
+      ctx.dm = new DataManager()
       ctx.baseTfSec = baseTfSec
     }
     ctx.dm.setBaseBars(bars)

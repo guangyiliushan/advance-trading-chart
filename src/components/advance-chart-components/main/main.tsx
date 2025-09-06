@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Settings } from "lucide-react"
-import type { ChartData, ChartTypeStr } from "@/lib/types"
+import type { ChartData, ChartTypeStr } from "@/core/types"
 import { SettingPanel } from "./setting/setting-panel"
 import { MainChart } from "./chart/main-chart"
 import type { TradingChartHandle } from "./chart/trading-chart"

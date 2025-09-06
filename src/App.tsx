@@ -1,10 +1,9 @@
-import * as React from 'react'
 import './App.css'
-import AdvanceChart from '@/components/advance-chart'
+import AdvanceChartDemo from '@/examples/demo/AdvanceChartDemo'
 
 function App() {
   return (
-    <AdvanceChart />
+    <AdvanceChartDemo />
   )
 }
 

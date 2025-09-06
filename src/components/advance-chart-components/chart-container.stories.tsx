@@ -1,6 +1,5 @@
-import React from "react";
 import { ChartContainer } from "./chart-container";
-import type { ChartData } from "@/lib/types";
+import type { ChartData } from "@/core/types";
 import type { Time } from "lightweight-charts";
 
 const mockData: ChartData[] = [
