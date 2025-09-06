@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useImperativeHandle, useState } from "react"
 import { createChart, ColorType, CrosshairMode, HistogramSeries } from "lightweight-charts"
 import type { IChartApi, ISeriesApi, Time } from "lightweight-charts"
-import { parseSpanSec, toUnixSeconds } from "@/lib/chart-tools"
+import { parseSpanSec, toUnixSeconds } from "@/core/utils"
 import type { ChartData, ChartTypeStr } from '@/core/types'
 import { convertChartData } from '@/core/utils'
 import { getCssVariableRgb } from "@/core/utils"

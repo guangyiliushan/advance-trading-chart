@@ -1,3 +1,4 @@
+
 /**
  * 图表数据处理工具函数
  * 包含数据转换、类型守卫、聚合等核心功能
@@ -24,9 +25,8 @@ import type {
   ChartType,
   TimeframeSec
 } from '../types';
-
-import { toUnixSeconds } from './time.utils';
 import { getCssVariableRgb } from './color.utils';
+import { toUnixSeconds } from './time.utils';
 
 // ============================================================================
 // 辅助函数

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { ChartContainer } from '@/components/advance-chart-components/chart-container'
 import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
-import { generateFromData } from '@/lib/chart-tools'
+import { generateFromData } from '@/core/utils'
 import type { ChartData } from '@/core/types'
 import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
 

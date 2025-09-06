@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ThemeProvider } from '@/theme-provider'
 import { Main } from './main'
 import type { TradingChartHandle } from './chart/trading-chart'
-import { generateFromData } from '@/lib/chart-tools'
+import { generateFromData } from '@/core/utils'
 import type { ChartTypeStr } from '@/core/types'
 
 const chartTypeOptions: ChartTypeStr[] = [
