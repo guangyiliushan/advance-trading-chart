@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { ThemeProvider } from '@/theme-provider'
 import { Main } from './main'
 import type { TradingChartHandle } from './chart/trading-chart'
-import { generateFromData } from '@/core/utils'
+import { generateData } from '@/core/utils'
 import type { ChartTypeStr } from '@/core/types'
 
 const chartTypeOptions: ChartTypeStr[] = [
@@ -51,7 +51,7 @@ type Story = StoryObj<typeof meta>
 // 基本用法：默认亮色主题 + K线图。包含一个相对定位的容器以承载绝对定位的设置按钮。
 export const Basic: Story = {
   render: (args) => {
-    const data = useMemo(() => generateFromData(500, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(500, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>
         <div className="relative h-[480px] w-full bg-background">
@@ -74,7 +74,7 @@ export const Basic: Story = {
 export const DarkTheme: Story = {
   args: { dark: true },
   render: (args) => {
-    const data = useMemo(() => generateFromData(500, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(500, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme="dark">
         <div className="relative h-[480px] w-full bg-background">
@@ -94,7 +94,7 @@ export const DarkTheme: Story = {
 export const ChartTypes: Story = {
   args: { chartType: 'Line' },
   render: (args) => {
-    const data = useMemo(() => generateFromData(500, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(500, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>
         <div className="relative h-[480px] w-full bg-background">
@@ -117,7 +117,7 @@ export const ChartTypes: Story = {
 export const AutoModeOff: Story = {
   args: { autoMode: false },
   render: (args) => {
-    const data = useMemo(() => generateFromData(500, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(500, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>
         <div className="relative h-[480px] w-full bg-background">
@@ -135,7 +135,7 @@ export const AutoModeOff: Story = {
 export const SparseData: Story = {
   name: 'Data: Sparse (100 bars)',
   render: (args) => {
-    const data = useMemo(() => generateFromData(100, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(100, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>
         <div className="relative h-[480px] w-full bg-background">
@@ -149,7 +149,7 @@ export const SparseData: Story = {
 export const DenseData: Story = {
   name: 'Data: Dense (2000 bars)',
   render: (args) => {
-    const data = useMemo(() => generateFromData(2000, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(2000, 30000, undefined, 60), [])
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>
         <div className="relative h-[480px] w-full bg-background">
@@ -163,7 +163,7 @@ export const DenseData: Story = {
 // ref 交互：通过外部按钮触发 Main -> TradingChart 的实例方法
 export const WithRefControls: Story = {
   render: (args) => {
-    const data = useMemo(() => generateFromData(500, 30000, undefined, 60), [])
+    const data = useMemo(() => generateData(500, 30000, undefined, 60), [])
     const ref = useRef<TradingChartHandle | null>(null)
     return (
       <ThemeProvider forcedTheme={args.dark ? 'dark' : 'light'}>

@@ -7,3 +7,6 @@ export * from './chart-data.utils';
 export * from './time.utils';
 export * from './color.utils';
 export * from './format.utils';
+
+// 重新导出数据生成// 兼容性导出
+export { generateData } from '../data/mock-data-generator';
