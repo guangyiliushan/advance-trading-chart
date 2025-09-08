@@ -107,6 +107,9 @@ importers:
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.1.1)
+      fancy-canvas:
+        specifier: ^2.1.0
+        version: 2.1.0
       heroicons:
         specifier: ^2.2.0
         version: 2.2.0
