@@ -46,7 +46,10 @@ export const TradingChart = React.forwardRef(
     const programmaticRangeUpdate = useRef(false)
     const pendingSpanRef = useRef<string | null>(null)
     const dataVersionRef = useRef(0)
-
+    // 新增：保存当前可视范围的ref
+    const currentVisibleRangeRef = useRef<{ from: Time; to: Time } | null>(null)
+    // 新增：标记是否是首次autoMode切换
+    const isInitialAutoModeRef = useRef(true)
     const layoutColors = useMemo(() => getLayoutColors(), [dark])
 
     // Memoize transformed series data for performance and single-source-of-truth
@@ -231,11 +234,19 @@ export const TradingChart = React.forwardRef(
       }
     }, [layoutColors, memoData, data, dark, symbol, updateHistogramBase, autoMode])
 
-    // 根据 autoMode 切换“自由上下移动”能力：
+    // 根据 autoMode 切换"自由上下移动"能力：
     // - autoMode = true：启用价格轴自动缩放；不允许通过拖拽价格轴自由移动（默认行为）
     // - autoMode = false：关闭价格轴自动缩放；允许通过按住价格轴拖拽来自由上下移动
     useEffect(() => {
       if (!chartRef.current || !mainSeriesRef.current) return
+
+      // 在切换autoMode之前，保存当前的可视范围
+      if (!autoMode && chartRef.current.timeScale().getVisibleRange) {
+        const currentRange = chartRef.current.timeScale().getVisibleRange()
+        if (currentRange) {
+          currentVisibleRangeRef.current = currentRange
+        }
+      }
 
       // 切换价格轴自动缩放（主 series 对应的价格轴 + 右侧价格轴）
       try {
@@ -260,10 +271,21 @@ export const TradingChart = React.forwardRef(
         } as any)
       } catch { /* noop */ }
 
-      // 当重新切回自动模式时，立即对齐内容（避免仍然停留在用户拖拽后的视图）
+      // 修改：当重新切回自动模式时，尝试恢复之前的可视范围
       if (autoMode) {
-        programmaticRangeUpdate.current = true
-        chartRef.current.timeScale().fitContent()
+        // 如果不是首次切换且有保存的可视范围，则恢复该范围
+        if (!isInitialAutoModeRef.current && currentVisibleRangeRef.current) {
+          programmaticRangeUpdate.current = true
+          chartRef.current.timeScale().setVisibleRange(currentVisibleRangeRef.current)
+        } else if (isInitialAutoModeRef.current) {
+          // 首次初始化时才调用fitContent
+          programmaticRangeUpdate.current = true
+          chartRef.current.timeScale().fitContent()
+          isInitialAutoModeRef.current = false
+        }
+      } else {
+        // 切换到手动模式时，标记不再是首次
+        isInitialAutoModeRef.current = false
       }
     }, [autoMode])
 

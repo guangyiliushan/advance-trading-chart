@@ -145,19 +145,15 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
       }
     }, [onRangeSpanChange, onTimeframeChange, autoMode])
 
-    // 切换自动模式：开启时不清空固定范围；若存在用户指定的范围，则用该范围锚定到最新；否则回退为 goLive + fitContent
+    // 切换自动模式：简化逻辑，主要的范围管理交给trading-chart.tsx处理
     const handleAutoModeChange = React.useCallback((v: boolean) => {
       setAutoMode(v)
-      if (v) {
-        if (rangeSpan) {
-          chartRef.current?.setVisibleRange(rangeSpan)
-          chartRef.current?.goLive()
-        } else {
-          chartRef.current?.goLive()
-          chartRef.current?.fitContent()
-        }
+      // 移除原有的范围重置逻辑，让trading-chart.tsx内部处理
+      // 只在有明确rangeSpan且开启自动模式时才应用特定范围
+      if (v && rangeSpan) {
+        chartRef.current?.setVisibleRange(rangeSpan)
       }
-      // 关闭自动：不做额外处理，保持当前可见范围，允许自由移动
+      // 关闭自动：不做额外处理，保持当前可视范围，允许自由移动
     }, [rangeSpan])
 
     // 新增：图表类型本地状态

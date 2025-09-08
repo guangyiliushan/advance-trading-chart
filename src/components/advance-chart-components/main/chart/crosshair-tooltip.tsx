@@ -14,6 +14,7 @@ export type CrosshairTooltipProps = {
   timeZone?: string
   pricePrecision?: number
   dark?: boolean
+  showTooltip?: boolean
 }
 
 /**
@@ -30,6 +31,7 @@ export const CrosshairTooltip: React.FC<CrosshairTooltipProps> = ({
   timeZone = "UTC",
   pricePrecision = 2,
   dark = false,
+  showTooltip = false,
 }) => {
   const tooltipRef = useRef<HTMLDivElement | null>(null)
 
@@ -113,40 +115,47 @@ export const CrosshairTooltip: React.FC<CrosshairTooltipProps> = ({
         timeZone,
       }).format(dt)
 
-      const fmt = (v: number) => v.toFixed(pricePrecision)
-
-      tp.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div style="opacity:.8;">${dateStr}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <span><strong>O</strong>: ${fmt(hovered.open)}</span>
-            <span><strong>H</strong>: ${fmt(hovered.high)}</span>
-            <span><strong>L</strong>: ${fmt(hovered.low)}</span>
-            <span><strong>C</strong>: ${fmt(hovered.close)}</span>
-            ${typeof hovered.volume === 'number' ? `<span><strong>V</strong>: ${hovered.volume}</span>` : ''}
-            <span style="color:${chg >= 0 ? layoutColors.up : layoutColors.down}">
-              <strong>${chg >= 0 ? '+' : ''}${fmt(chg)}</strong> (${chgPct.toFixed(2)}%)
-            </span>
-          </div>
-        </div>`
-
-      // position near cursor, keep inside container
-      const rect = cont.getBoundingClientRect()
-      const x = param.point.x as number
-      const y = param.point.y as number
-      const left = Math.min(rect.width - tp.offsetWidth - 12, Math.max(8, x + 12))
-      const top = Math.min(rect.height - tp.offsetHeight - 12, Math.max(8, y + 12))
-      tp.style.left = `${left}px`
-      tp.style.top = `${top}px`
-      tp.style.display = "block"
+      // Always trigger the callback regardless of showTooltip setting
       onHoverBarChange?.(hovered as any)
+
+      // Only show tooltip if showTooltip is true
+      if (showTooltip) {
+        const fmt = (v: number) => v.toFixed(pricePrecision)
+
+        tp.innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="opacity:.8;">${dateStr}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <span><strong>O</strong>: ${fmt(hovered.open)}</span>
+              <span><strong>H</strong>: ${fmt(hovered.high)}</span>
+              <span><strong>L</strong>: ${fmt(hovered.low)}</span>
+              <span><strong>C</strong>: ${fmt(hovered.close)}</span>
+              ${typeof hovered.volume === 'number' ? `<span><strong>V</strong>: ${hovered.volume}</span>` : ''}
+              <span style="color:${chg >= 0 ? layoutColors.up : layoutColors.down}">
+                <strong>${chg >= 0 ? '+' : ''}${fmt(chg)}</strong> (${chgPct.toFixed(2)}%)
+              </span>
+            </div>
+          </div>`
+
+        // position near cursor, keep inside container
+        const rect = cont.getBoundingClientRect()
+        const x = param.point.x as number
+        const y = param.point.y as number
+        const left = Math.min(rect.width - tp.offsetWidth - 12, Math.max(8, x + 12))
+        const top = Math.min(rect.height - tp.offsetHeight - 12, Math.max(8, y + 12))
+        tp.style.left = `${left}px`
+        tp.style.top = `${top}px`
+        tp.style.display = "block"
+      } else {
+        tp.style.display = "none"
+      }
     }
 
     chart.subscribeCrosshairMove(handler)
     return () => {
       chart.unsubscribeCrosshairMove(handler)
     }
-  }, [chart, data, containerRef, layoutColors.up, layoutColors.down, onHoverBarChange, locale, timeZone, pricePrecision])
+  }, [chart, data, containerRef, layoutColors.up, layoutColors.down, onHoverBarChange, locale, timeZone, pricePrecision, showTooltip])
 
   return null
 }

@@ -21,7 +21,7 @@ export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(
       symbol,
       chartType = "Candlestick",
       autoMode = true,
-      enableCrosshairTooltip = false,
+      enableCrosshairTooltip = true,
       onChartApi,
       ...rest
     },
