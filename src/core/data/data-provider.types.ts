@@ -5,6 +5,7 @@
  */
 
 import type { ChartData } from '../types';
+import type { PredictionData, HeatMapPredictionData } from '../types/chart-data.types';
 
 /**
  * 数据请求参数
@@ -138,3 +139,35 @@ export interface DataProviderConfig {
   /** 缓存过期时间（毫秒） */
   cacheExpiry?: number;
 }
+
+/**
+ * 扩展的数据提供者接口
+ * 支持预测数据的获取和处理
+ */
+export interface IPredictionDataProvider extends IDataProvider {
+  /** 获取预测数据 */
+  getPredictionData(request: PredictionDataRequest): Promise<DataResponse<PredictionData>>;
+  /** 获取热力图预测数据 */
+  getHeatMapPredictionData(request: PredictionDataRequest): Promise<DataResponse<HeatMapPredictionData>>;
+  /** 订阅实时预测数据 */
+  subscribePredictionRealtime?(symbol: string, timeframe: string, callback: PredictionRealtimeCallback): UnsubscribeFunction;
+  /** 获取支持的预测模型 */
+  getSupportedModels?(): Promise<string[]>;
+}
+
+/**
+ * 预测数据请求参数
+ */
+export interface PredictionDataRequest extends DataRequest {
+  /** 预测时间范围（秒） */
+  predictionHorizon?: number;
+  /** 预测模型ID */
+  modelId?: string;
+  /** 置信度阈值 */
+  confidenceThreshold?: number;
+}
+
+/**
+ * 预测数据实时回调函数类型
+ */
+export type PredictionRealtimeCallback = (data: PredictionData) => void;

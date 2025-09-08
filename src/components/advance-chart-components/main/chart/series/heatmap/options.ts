@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type CustomSeriesOptions, customSeriesDefaultOptions } from 'lightweight-charts';
 import { defaultColorShader } from './color-utils';
 
@@ -45,3 +46,70 @@ export const defaultOptions: HeatMapSeriesOptions = {
   // 默认颜色透明度为 0.7
   colorOpacity: 0.7,
 } as const;
+
+/**
+ * 预测热力图专用选项接口
+ */
+export interface PredictionHeatMapOptions extends HeatMapSeriesOptions {
+  /** 预测模式配置 */
+  predictionMode: {
+    /** 是否启用预测模式 */
+    enabled: boolean;
+    /** 预测类型颜色映射 */
+    typeColors?: {
+      bullish?: string;
+      bearish?: string;
+      neutral?: string;
+    };
+    /** 置信度显示配置 */
+    confidenceDisplay?: {
+      enabled: boolean;
+      /** 低置信度透明度 */
+      lowConfidenceOpacity: number;
+      /** 置信度阈值 */
+      confidenceThreshold: number;
+    };
+    /** 预测强度映射 */
+    strengthMapping?: {
+      enabled: boolean;
+      /** 强度到透明度的映射函数 */
+      strengthToOpacity: (strength: number) => number;
+    };
+  };
+  /** 交互增强配置 */
+  interactionEnhancement: {
+    /** 悬停时显示详细信息 */
+    showDetailOnHover: boolean;
+    /** 点击时的回调函数 */
+    onCellClick?: (cellData: any) => void;
+    /** 悬停时的回调函数 */
+    onCellHover?: (cellData: any) => void;
+  };
+}
+
+/**
+ * 预测热力图的默认选项
+ */
+export const predictionHeatMapDefaultOptions: PredictionHeatMapOptions = {
+  ...defaultOptions,
+  predictionMode: {
+    enabled: true,
+    typeColors: {
+      bullish: '#22c55e', // 绿色
+      bearish: '#ef4444', // 红色
+      neutral: '#6b7280'  // 灰色
+    },
+    confidenceDisplay: {
+      enabled: true,
+      lowConfidenceOpacity: 0.3,
+      confidenceThreshold: 0.5
+    },
+    strengthMapping: {
+      enabled: true,
+      strengthToOpacity: (strength: number) => 0.3 + strength * 0.7
+    }
+  },
+  interactionEnhancement: {
+    showDetailOnHover: true
+  }
+};

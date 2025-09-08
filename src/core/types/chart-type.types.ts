@@ -31,7 +31,7 @@ export type OHLCChartTypeStr = 'Bar' | 'Candlestick';
 /**
  * 高级图表类型字符串标识（自定义变体）
  */
-export type AdvancedChartTypeStr = 'HLCArea' | 'HighLow';
+export type AdvancedChartTypeStr = 'HLCArea' | 'HeatMap';
 
 /**
  * 支持的所有图表类型字符串标识

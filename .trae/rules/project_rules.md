@@ -3,7 +3,7 @@
 
 ## 项目概述
 
-这是一个基于 React + TypeScript + Vite 构建的高级交易图表组件库，使用 lightweight-charts v5 作为图表核心，集成 Storybook 进行文档管理，最终发布到 npm 供其他项目使用。
+这是一个基于 React + TypeScript + Vite 构建的高级交易图表组件库，使用 lightweight-charts v5 作为图表核心，集成 Storybook 进行文档管理，最终发布到 npm 供其他项目使用。项目提供完整的交易图表解决方案，包括数据管理、缓存系统、自定义图表系列（热力图、HLC区域图）、实时数据支持和可选功能模块。
 
 ## 技术栈规范
 
@@ -48,31 +48,78 @@ src/
 │   │   ├── data-manager.ts         # 数据管理器
 │   │   ├── timeframe.utils.ts      # 时间框架工具
 │   │   └── index.ts                # 缓存模块导出
+│   ├── data/                       # 数据提供者系统
+│   │   ├── data-provider.types.ts  # 数据提供者接口定义
+│   │   ├── data-provider-factory.ts # 数据提供者工厂
+│   │   ├── mock-data-provider.ts   # 模拟数据提供者
+│   │   ├── real-data-provider.ts   # 真实数据提供者
+│   │   ├── mock-data-generator.ts  # 模拟数据生成器
+│   │   ├── environment.utils.ts    # 环境检测工具
+│   │   └── index.ts                # 数据模块导出
 │   └── index.ts                    # 核心模块统一导出
 ├── components/                     # 组件层
 │   ├── advance-chart-components/   # 图表组件群
 │   │   ├── header/                 # 头部组件群
-│   │   │   ├── left/               # 左侧控件
-│   │   │   ├── right/              # 右侧控件
+│   │   │   ├── left/               # 左侧控件组
+│   │   │   │   ├── header-left.tsx         # 左侧容器
+│   │   │   │   ├── symbol-select.tsx       # 交易对选择器
+│   │   │   │   ├── timeframe-select.tsx    # 时间周期选择器
+│   │   │   │   ├── chart-type-switcher.tsx # 图表类型切换器
+│   │   │   │   └── indicator-menu.tsx      # 指标菜单
+│   │   │   ├── right/              # 右侧控件组
+│   │   │   │   ├── header-right.tsx        # 右侧容器
+│   │   │   │   ├── language-selector.tsx   # 语言选择器
+│   │   │   │   ├── image-menu.tsx          # 图片导出菜单
+│   │   │   │   └── components/             # 右侧子组件
+│   │   │   │       ├── action-buttons.tsx  # 操作按钮组
+│   │   │   │       ├── fullscreen-button.tsx # 全屏按钮
+│   │   │   │       ├── settings-button.tsx # 设置按钮
+│   │   │   │       └── theme-switcher.tsx  # 主题切换器
 │   │   │   └── header.tsx          # 头部容器
 │   │   ├── footer/                 # 底部组件群
-│   │   │   ├── left/               # 左侧控件
-│   │   │   ├── right/              # 右侧控件
+│   │   │   ├── left/               # 左侧控件组
+│   │   │   │   ├── footer-left.tsx         # 左侧容器
+│   │   │   │   └── visible-range-selector.tsx # 可见范围选择器
+│   │   │   ├── right/              # 右侧控件组
+│   │   │   │   ├── footer-right.tsx        # 右侧容器
+│   │   │   │   ├── footer-controls.tsx     # 底部控制器
+│   │   │   │   └── timezone-selector.tsx   # 时区选择器
 │   │   │   └── footer.tsx          # 底部容器
 │   │   ├── main/                   # 主体组件群
 │   │   │   ├── chart/              # 图表核心
 │   │   │   │   ├── lib/            # 图表初始化工具
+│   │   │   │   │   └── chart-init.ts       # 图表初始化逻辑
+│   │   │   │   ├── series/         # 自定义图表系列
+│   │   │   │   │   ├── heatmap/    # 热力图系列
+│   │   │   │   │   │   ├── heatmap-series.ts    # 热力图系列类
+│   │   │   │   │   │   ├── renderer.ts          # 热力图渲染器
+│   │   │   │   │   │   ├── data.ts              # 热力图数据类型
+│   │   │   │   │   │   ├── options.ts           # 热力图配置选项
+│   │   │   │   │   │   ├── color-utils.ts       # 颜色工具
+│   │   │   │   │   │   ├── common.ts            # 通用工具
+│   │   │   │   │   │   ├── full-width.ts        # 全宽度计算
+│   │   │   │   │   │   ├── positions.ts         # 位置计算
+│   │   │   │   │   │   └── probability-data.ts  # 概率数据处理
+│   │   │   │   │   └── HLC/        # HLC区域图系列
+│   │   │   │   │       ├── hlc-area-series.ts   # HLC区域图系列类
+│   │   │   │   │       ├── renderer.ts          # HLC渲染器
+│   │   │   │   │       ├── data.ts              # HLC数据类型
+│   │   │   │   │       └── options.ts           # HLC配置选项
 │   │   │   │   ├── trading-chart.tsx      # 纯渲染组件
 │   │   │   │   ├── main-chart.tsx         # 图表包装器
 │   │   │   │   ├── crosshair-tooltip.tsx  # 十字线提示
 │   │   │   │   └── price-legend-overlay.tsx # 价格图例
 │   │   │   ├── setting/            # 设置面板
+│   │   │   │   └── setting-panel.tsx      # 设置面板组件
 │   │   │   └── main.tsx            # 主体容器
 │   │   └── chart-container.tsx     # 主容器组件
 │   ├── ui/                         # shadcn/ui组件
 │   └── advance-chart.tsx           # 演示应用
 ├── examples/                       # 示例代码
 │   └── demo/                       # 演示应用
+│       └── AdvanceChartDemo.tsx    # 演示组件
+├── optional/                       # 可选功能模块
+│   └── index.ts                    # 高级工具导出（按需引入）
 └── lib/                           # 库层工具（兼容层）
 ```
 
@@ -80,6 +127,7 @@ src/
 
 1. **核心层 (Core Layer)**: `src/core/`
    - 类型定义、工具函数、缓存管理
+   - 数据提供者系统和抽象接口
    - 纯函数设计，无副作用
    - 主库入口，支持Tree Shaking
 
@@ -87,8 +135,18 @@ src/
    - React组件实现
    - 基于核心层构建
    - 完整的UI套件
+   - 自定义图表系列（热力图、HLC区域图）
 
-3. **库层 (Library Layer)**: `src/lib/`
+3. **可选模块层 (Optional Layer)**: `src/optional/`
+   - 高级功能和工具
+   - 按需引入，减少主包体积
+   - 缓存管理器、数据生成器等高级工具
+
+4. **示例层 (Examples Layer)**: `src/examples/`
+   - 使用示例和演示代码
+   - 最佳实践展示
+
+5. **库层 (Library Layer)**: `src/lib/`
    - 兼容层和过渡工具
    - 逐步迁移到核心层
 
@@ -121,7 +179,8 @@ interface TradingChartHandle {
 #### 2. ChartContainer（完整UI套件）
 ```typescript
 interface ChartContainerProps {
-  data: ChartData[]
+  // 数据可以是静态数据或者通过数据提供者自动获取
+  data?: ChartData[]
   dark: boolean
   symbol: string
   timeframe: string
@@ -129,8 +188,73 @@ interface ChartContainerProps {
   onRangeSpanChange: (v: string | null) => void
   onSymbolChange: (v: string) => void
   onTimeframeChange: (v: string) => void
-  symbolOptions: Array<{ value: string; label?: string }> | string[]
+  onFitContent?: () => void
+  onGoLive?: () => void
   className?: string
+  // 外部可配置的交易对选项
+  symbolOptions: Array<{ value: string; label?: string }> | string[]
+  // 是否启用自动数据获取
+  enableAutoData?: boolean
+  // 是否启用实时数据
+  enableRealtime?: boolean
+  // 数据加载状态回调
+  onDataLoading?: (loading: boolean) => void
+  // 数据错误回调
+  onDataError?: (error: string) => void
+}
+```
+
+#### 3. 数据提供者系统
+```typescript
+// 数据提供者接口
+interface IDataProvider {
+  readonly name: string
+  readonly isMock: boolean
+  getHistoricalData(request: DataRequest): Promise<DataResponse<ChartData>>
+  subscribeRealtime?(symbol: string, timeframe: string, callback: RealtimeCallback): UnsubscribeFunction
+  getSupportedSymbols?(): Promise<string[]>
+  getSupportedTimeframes?(): string[]
+  isConnected?(): boolean
+  connect?(): Promise<void>
+  disconnect?(): Promise<void>
+}
+
+// 数据请求参数
+interface DataRequest {
+  symbol: string
+  timeframe: string
+  from?: number
+  to?: number
+  limit?: number
+}
+
+// 数据响应结果
+interface DataResponse<T = ChartData> {
+  data: T[]
+  hasMore?: boolean
+  nextCursor?: string
+  error?: string
+}
+```
+
+#### 4. 自定义图表系列
+```typescript
+// 热力图数据接口
+interface HeatMapData {
+  time: Time
+  cells: Array<{
+    price: number
+    volume: number
+    probability?: number
+  }>
+}
+
+// HLC区域图数据接口
+interface HLCAreaData {
+  time: Time
+  high: number
+  low: number
+  close: number
 }
 ```
 
@@ -141,6 +265,8 @@ interface ChartContainerProps {
 3. **组合优于继承**: 通过组件组合构建复杂功能
 4. **向前引用**: 使用forwardRef暴露实例方法
 5. **类型安全**: 完整的TypeScript类型定义
+6. **数据抽象**: 通过数据提供者系统支持多种数据源
+7. **按需加载**: 可选功能模块支持按需引入
 
 ## 数据类型契约
 
@@ -161,7 +287,8 @@ interface ChartData {
 type ChartTypeStr = 
   | 'Line' | 'Area' | 'Baseline' | 'Histogram'  // 单值系列
   | 'Bar' | 'Candlestick'                        // OHLC系列
-  | 'HLCArea' | 'HighLow'                        // 高级系列
+  | 'HLCArea'                        // 高级系列
+  | 'HeatMap'                                     // 自定义系列
 
 // 时间框架
 type TimeframeSec = number
@@ -258,7 +385,13 @@ export type { TradingChartHandle } from './components/advance-chart-components/m
 // 核心模块导出
 export * from './core/types'
 export * from './core/utils'
-export * from './core/cache'
+export * from './core/data'
+
+// 基础缓存功能（主包）
+export { TF_STR_TO_SEC, TF_SEC_TO_STR } from './core/cache'
+
+// 可选功能模块导出（按需引入）
+// import { cacheManager, DataManager, generateData } from '@your-org/advance-trading-chart/optional'
 ```
 
 ### 版本管理
@@ -269,6 +402,8 @@ export * from './core/cache'
 
 ## 开发规范契约
 
+### 开发规范契约
+
 ### 代码规范
 
 1. **TypeScript严格模式**: 启用所有严格检查
@@ -278,6 +413,8 @@ export * from './core/cache'
    - 函数: camelCase
    - 常量: UPPER_SNAKE_CASE
    - 类型: PascalCase
+
+
 
 ### 文件命名规范
 
@@ -433,15 +570,22 @@ import type { ChartData } from '@your-org/advance-trading-chart'
 
 function MyApp() {
   const [data, setData] = useState<ChartData[]>([])
+  const [dark, setDark] = useState(false)
+  const [rangeSpan, setRangeSpan] = useState<string | null>(null)
   
   return (
     <ChartContainer
       data={data}
+      dark={dark}
       symbol="BTC/USD"
       timeframe="1h"
-      symbolOptions={['BTC/USD', 'ETH/USD']}
+      rangeSpan={rangeSpan}
+      onRangeSpanChange={setRangeSpan}
+      symbolOptions={['BTC/USD', 'ETH/USD', 'SOL/USD']}
       onSymbolChange={handleSymbolChange}
       onTimeframeChange={handleTimeframeChange}
+      onFitContent={handleFitContent}
+      onGoLive={handleGoLive}
     />
   )
 }
@@ -449,12 +593,48 @@ function MyApp() {
 
 ### 高级使用
 
+#### 1. 使用数据提供者系统
+```typescript
+import { ChartContainer } from '@your-org/advance-trading-chart'
+
+function AutoDataChart() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  
+  return (
+    <ChartContainer
+      // 不传入data，启用自动数据获取
+      dark={false}
+      symbol="BTC/USD"
+      timeframe="1h"
+      rangeSpan={null}
+      onRangeSpanChange={() => {}}
+      symbolOptions={['BTC/USD', 'ETH/USD']}
+      onSymbolChange={() => {}}
+      onTimeframeChange={() => {}}
+      enableAutoData={true}
+      enableRealtime={true}
+      onDataLoading={setLoading}
+      onDataError={setError}
+    />
+  )
+}
+```
+
+#### 2. 使用可选功能模块
 ```typescript
 import { TradingChart } from '@your-org/advance-trading-chart'
-import { generateData } from '@your-org/advance-trading-chart'
+// 按需引入高级功能
+import { generateData, cacheManager, DataManager } from '@your-org/advance-trading-chart/optional'
 
-function CustomChart() {
-  const data = generateData(1000, 30000)
+function AdvancedChart() {
+  // 使用数据生成器
+  const data = generateData(1000, 30000, undefined, 3600)
+  
+  // 使用缓存管理器
+  React.useEffect(() => {
+    cacheManager.warmup('BTC/USD', ['1m', '5m', '1h'])
+  }, [])
   
   return (
     <TradingChart
@@ -467,7 +647,63 @@ function CustomChart() {
 }
 ```
 
+#### 3. 自定义图表系列
+```typescript
+import { TradingChart } from '@your-org/advance-trading-chart'
+import type { HeatMapData } from '@your-org/advance-trading-chart'
+
+function HeatMapChart() {
+  const heatmapData: HeatMapData[] = [
+    {
+      time: '2024-01-01',
+      cells: [
+        { price: 30000, volume: 100, probability: 0.8 },
+        { price: 30100, volume: 150, probability: 0.6 }
+      ]
+    }
+  ]
+  
+  return (
+    <TradingChart
+      data={heatmapData}
+      chartType="HeatMap"
+      dark={false}
+    />
+  )
+}
+```
+
 ## 维护和更新
+
+### 版本管理策略
+- 遵循语义化版本控制 (SemVer)
+- 主版本: 破坏性变更
+- 次版本: 新功能添加
+- 修订版本: Bug修复
+
+### 更新流程
+1. 功能开发在 feature 分支
+2. 代码审查和测试
+3. 合并到 develop 分支
+4. 发布前集成测试
+5. 合并到 main 分支并发布
+
+### 特殊维护指南
+
+#### 数据提供者系统
+- 定期检查数据源API的变更
+- 监控数据获取性能和错误率
+- 更新缓存策略以适应数据模式变化
+
+#### 自定义图表系列
+- 跟踪 `lightweight-charts` 库的更新
+- 确保自定义渲染器与新版本兼容
+- 性能优化和内存泄漏检查
+
+#### 可选模块
+- 保持向后兼容性
+- 独立的测试和发布周期
+- 文档同步更新
 
 ### 更新策略
 
