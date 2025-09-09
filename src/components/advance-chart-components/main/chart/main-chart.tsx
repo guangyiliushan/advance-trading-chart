@@ -1,15 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useRef, useState } from "react"
+import { CrosshairTooltip } from "./overlays/crosshair-tooltip"
+import { PriceLegendOverlay } from "./overlays/price-legend-overlay"
+import { TradingChart } from "./trading-chart"
+import type { TradingChartHandle, TradingChartProps } from "./trading-chart"
+import type { ChartData } from "@/core"
 import type { IChartApi } from "lightweight-charts"
-import { TradingChart, type TradingChartHandle, type TradingChartProps } from "./trading-chart"
-import { CrosshairTooltip } from "./crosshair-tooltip"
-import { PriceLegendOverlay } from "./price-legend-overlay"
-import type { ChartData } from "@/core/types"
 import { getLayoutColors } from "./lib/chart-init"
 
-export type MainChartProps = Omit<TradingChartProps, "containerRef" | "children"> & {
-  // 仍然支持透传 onChartApi
-  onChartApi?: (api: IChartApi | null) => void
+export type MainChartProps = Omit<TradingChartProps,
+  | 'containerRef'
+  | 'children'
+  | 'onChartApi'
+> & {
+  onChartApi?: TradingChartProps['onChartApi']
+  className?: string
+  predictionHeatmap?: TradingChartProps['predictionHeatmap']
 }
 
 export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(

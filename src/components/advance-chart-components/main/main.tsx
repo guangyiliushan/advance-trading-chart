@@ -1,23 +1,43 @@
-import * as React from "react"
 import { Settings } from "lucide-react"
-import type { ChartData, ChartTypeStr } from "@/core/types"
-import { SettingPanel } from "./setting/setting-panel"
-import { MainChart } from "./chart/main-chart"
+import React, { forwardRef, useImperativeHandle } from "react"
 import type { TradingChartHandle } from "./chart/trading-chart"
+import { MainChart } from "./chart/main-chart"
+import { SettingPanel } from "./setting/setting-panel"
+import type { ChartData, ChartTypeStr } from "@/core/types"
+import type { HeatMapData } from "./chart/series/heatmap/data"
 
-export type MainProps = {
+export interface MainProps {
   data: ChartData[]
-  dark: boolean
-  symbol: string
-  chartType: ChartTypeStr
-  autoMode: boolean
+  dark?: boolean
+  symbol?: string
+  chartType?: ChartTypeStr
+  autoMode?: boolean
   className?: string
+  predictionHeatmap?: HeatMapData[]
 }
 
-export const Main = React.forwardRef<TradingChartHandle, MainProps>(
-  ({ data, dark, symbol, chartType, autoMode, className }, ref) => {
+export const Main = forwardRef<TradingChartHandle, MainProps>(
+  (
+    {
+      data,
+      dark,
+      symbol,
+      chartType,
+      autoMode,
+      className,
+      predictionHeatmap,
+    },
+    ref
+  ) => {
+    useImperativeHandle(ref, () => ({
+      fitContent: () => { },
+      goLive: () => { },
+      setVisibleRange: () => { },
+      enterFullscreen: () => { },
+    }))
+
     return (
-      <>
+      <div className={className}>
         <MainChart
           ref={ref}
           data={data}
@@ -25,7 +45,7 @@ export const Main = React.forwardRef<TradingChartHandle, MainProps>(
           symbol={symbol}
           chartType={chartType}
           autoMode={autoMode}
-          className={className}
+          predictionHeatmap={predictionHeatmap}
         />
         <SettingPanel>
           <button
@@ -35,9 +55,10 @@ export const Main = React.forwardRef<TradingChartHandle, MainProps>(
             <Settings className="h-5 w-5" />
           </button>
         </SettingPanel>
-      </>
+      </div>
     )
   }
 )
 
 Main.displayName = "Main"
+

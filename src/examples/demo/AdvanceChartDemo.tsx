@@ -5,6 +5,9 @@ import type { TradingChartHandle } from '@/components/advance-chart-components/m
 import { generateData } from '@/core/utils'
 import type { ChartData } from '@/core/types'
 import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
+// 新增：导入热力图类型与概率数据转换工具
+import type { HeatMapData } from '@/components/advance-chart-components/main/chart/series/heatmap/data'
+import { convertProbabilityToHeatMapData, generateSampleProbabilityData } from '@/components/advance-chart-components/main/chart/series/heatmap/probability-data'
 
 // 基于交易对推断一个初始基准价格（仅用于本地 mock 数据）
 function getBaseForSymbol(symbol: string) {
@@ -24,6 +27,8 @@ function AdvanceChartDemo() {
     return generateData(30000, 30000, undefined, initIntervalSec)
   })
   const chartRef = React.useRef<TradingChartHandle | null>(null)
+  // 新增：预测热力图数据（演示生成与转换，暂不透传）
+  const [predictionHeatmap, setPredictionHeatmap] = React.useState<HeatMapData[]>([])
 
   const symbolOptions = React.useMemo(() => [
     'BTC/USD',
@@ -76,6 +81,18 @@ function AdvanceChartDemo() {
     setData(cacheManager.getForTimeframe(symbol, tfSec))
   }, [symbol, timeframe])
 
+  // 新增：当主图数据更新时，生成示例概率数据并转换为热力图数据（仅演示，不透传）
+  React.useEffect(() => {
+    if (!data || data.length === 0) {
+      setPredictionHeatmap([])
+      return
+    }
+    // 这里可以替换为实际的预测概率数据来源
+    const sampleProb = generateSampleProbabilityData()
+    const heatmap = convertProbabilityToHeatMapData(sampleProb)
+    setPredictionHeatmap(heatmap)
+  }, [data, symbol, timeframe])
+
   return (
     <div className="min-h-dvh p-4 md:p-6 bg-background">
       <Card className="h-[70vh] p-0">
@@ -93,6 +110,7 @@ function AdvanceChartDemo() {
           onGoLive={() => chartRef.current?.goLive()}
           className="h-full w-full"
           symbolOptions={symbolOptions}
+          predictionHeatmap={predictionHeatmap}
         />
       </Card>
     </div>

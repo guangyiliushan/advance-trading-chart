@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChartCandlestick, ChartArea, ChartBar, ChartLine, ChartColumn, ChartColumnBig, Baseline } from "lucide-react"
+import { ChartCandlestick, ChartArea, ChartBar, ChartLine, ChartColumn, Baseline } from "lucide-react"
 import type { ChartTypeStr } from '@/core/types'
 import { useTranslation } from "react-i18next"
 
@@ -35,7 +35,6 @@ export const ChartTypeSwitcher: React.FC<Props> = ({ value, onChange }) => {
         Baseline: Baseline,
         Candlestick: ChartCandlestick,
         Histogram: ChartColumn,
-        HighLow: ChartColumnBig,
         Line: ChartLine,
     }
     // 从 ICONS 映射中获取对应的图标组件，如果没有找到则使用 ChartCandlestick 作为默认值

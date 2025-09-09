@@ -7,6 +7,8 @@ import { Header } from "./header/header"
 import { cn } from "@/lib/utils"
 import { Footer } from "./footer/footer"
 import { Main } from "./main/main"
+// 新增：热力图类型
+import type { HeatMapData } from "./main/chart/series/heatmap/data"
 
 // Add: utility for exiting fullscreen
 const exitFullscreen = () => {
@@ -41,6 +43,8 @@ type ChartContainerProps = {
   onDataLoading?: (loading: boolean) => void
   // 新增：数据错误回调
   onDataError?: (error: string) => void
+  // 新增：预测热力图数据
+  predictionHeatmap?: HeatMapData[]
 }
 
 export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContainerProps>(
@@ -60,7 +64,8 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
     enableAutoData = false,
     enableRealtime = false,
     onDataLoading,
-    onDataError
+    onDataError,
+    predictionHeatmap,
   }, ref) => {
 
     // 本地图表实例引用，既供 Footer 调用，也向外转发
@@ -290,6 +295,7 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
             chartType={chartType}
             autoMode={autoMode}
             className="flex-1 w-full"
+            predictionHeatmap={predictionHeatmap}
           />
         </div>
         {/* Footer */}

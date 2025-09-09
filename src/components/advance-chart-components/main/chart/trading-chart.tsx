@@ -9,6 +9,10 @@ import { convertChartData } from '@/core/utils'
 import { getCssVariableRgb } from "@/core/utils"
 import { cn } from '@/lib/utils'
 import { getLayoutColors, getConvertChartOptions, createMainSeries } from "./lib/chart-init"
+// 新增：热力图相关导入
+import type { HeatMapData } from './series/heatmap/data'
+import { HeatMapSeries } from './series/heatmap/heatmap-series'
+import { defaultOptions as defaultHeatMapOptions } from './series/heatmap/options'
 
 export type TradingChartProps = {
   data: ChartData[]
@@ -24,6 +28,8 @@ export type TradingChartProps = {
   containerRef?: React.RefObject<HTMLDivElement | null>
   // 允许外层将覆盖层作为 children 注入到相同容器中
   children?: React.ReactNode
+  // 新增：预测热力图数据（可选）
+  predictionHeatmap?: HeatMapData[]
 }
 
 // 对外暴露的实例方法
@@ -36,13 +42,15 @@ export type TradingChartHandle = {
 
 
 export const TradingChart = React.forwardRef(
-  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip: _enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
+  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip: _enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children, predictionHeatmap }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
     const internalContainerRef = useRef<HTMLDivElement | null>(null)
     const containerRef = containerRefProp ?? internalContainerRef
     const chartRef = useRef<IChartApi | null>(null)
     const [_chartApi, setChartApi] = useState<IChartApi | null>(null)
     const mainSeriesRef = useRef<ISeriesApi<any> | null>(null)
     const volSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
+    // 新增：热力图序列引用
+    const heatmapSeriesRef = useRef<ISeriesApi<'Custom'> | null>(null)
     const programmaticRangeUpdate = useRef(false)
     const pendingSpanRef = useRef<string | null>(null)
     const dataVersionRef = useRef(0)
@@ -129,6 +137,20 @@ export const TradingChart = React.forwardRef(
       mainSeries.setData(memoData.chartData)
       if (memoData.volumes.length) volSeries.setData(memoData.volumes)
 
+      // 新增：如果有热力图数据，创建并设置自定义系列
+      if (predictionHeatmap && predictionHeatmap.length > 0) {
+        try {
+          const hmSeries = chart.addCustomSeries(new HeatMapSeries(), {
+            ...defaultHeatMapOptions,
+            priceScaleId: 'right',
+          } as any)
+          heatmapSeriesRef.current = hmSeries as any
+          hmSeries.setData(predictionHeatmap as any)
+        } catch {
+          // noop
+        }
+      }
+
       // Keep all data visible initially
       chart.timeScale().fitContent()
 
@@ -145,6 +167,8 @@ export const TradingChart = React.forwardRef(
 
       return () => {
         resizeObserver.disconnect()
+        // 清理热力图引用（chart.remove() 会移除所有 series）
+        heatmapSeriesRef.current = null
         chart.remove()
         chartRef.current = null
         setChartApi(null)
@@ -233,6 +257,33 @@ export const TradingChart = React.forwardRef(
         }
       }
     }, [layoutColors, memoData, data, dark, symbol, updateHistogramBase, autoMode])
+
+    // 新增：监听 predictionHeatmap 变化，创建或更新热力图序列
+    useEffect(() => {
+      if (!chartRef.current) return
+      const chart = chartRef.current
+      // 无数据时移除已有热力图（避免残留）
+      if (!predictionHeatmap || predictionHeatmap.length === 0) {
+        if (heatmapSeriesRef.current) {
+          try { chart.removeSeries(heatmapSeriesRef.current as any) } catch { /* noop */ }
+          heatmapSeriesRef.current = null
+        }
+        return
+      }
+      // 有数据：若不存在则创建，存在则更新
+      if (!heatmapSeriesRef.current) {
+        try {
+          const hmSeries = chart.addCustomSeries(new HeatMapSeries(), {
+            ...defaultHeatMapOptions,
+            priceScaleId: 'right',
+          } as any)
+          heatmapSeriesRef.current = hmSeries as any
+          hmSeries.setData(predictionHeatmap as any)
+        } catch { /* noop */ }
+      } else {
+        try { (heatmapSeriesRef.current as any).setData(predictionHeatmap as any) } catch { /* noop */ }
+      }
+    }, [predictionHeatmap])
 
     // 根据 autoMode 切换"自由上下移动"能力：
     // - autoMode = true：启用价格轴自动缩放；不允许通过拖拽价格轴自由移动（默认行为）
