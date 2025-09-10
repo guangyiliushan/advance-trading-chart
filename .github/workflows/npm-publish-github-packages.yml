@@ -4,6 +4,7 @@
 name: Node.js Package
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
   push:
@@ -42,11 +43,8 @@ jobs:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
           cache: 'pnpm'
-      # 显式启用并激活 pnpm（Corepack）
-      - name: Enable Corepack and activate pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.12.3 --activate
+      - name: Install pnpm globally
+        run: npm i -g pnpm@10.12.3
       - run: pnpm --version
       - run: pnpm install --frozen-lockfile
       - run: pnpm publish
