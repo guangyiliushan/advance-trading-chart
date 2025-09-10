@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react"
-import React, { forwardRef, useImperativeHandle } from "react"
+import { forwardRef, useImperativeHandle } from "react"
 import type { TradingChartHandle } from "./chart/trading-chart"
 import { MainChart } from "./chart/main-chart"
 import { SettingPanel } from "./setting/setting-panel"
