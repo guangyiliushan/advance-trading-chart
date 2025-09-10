@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { ChartContainer } from '@/components/advance-chart-components/chart-container'
-import type { TradingChartHandle } from '@/components/advance-chart-components/chart/trading-chart'
-import { generateFromData } from '@/lib/chart-tools'
-import type { ChartData } from '@/lib/types'
-import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/lib/cache-manager'
+import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
+import { generateData } from '@/core/utils'
+import type { ChartData } from '@/core/types'
+import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
 
 // 基于交易对推断一个初始基准价格（仅用于本地 mock 数据）
 function getBaseForSymbol(symbol: string) {
@@ -21,7 +21,7 @@ function AdvanceChart() {
   const [dark, setDark] = React.useState(false)
   const [data, setData] = React.useState<ChartData[]>(() => {
     const initIntervalSec = timeframe === '1m' ? 60 : timeframe === '5m' ? 300 : timeframe === '1h' ? 3600 : 60
-    return generateFromData(30000, 30000, undefined, initIntervalSec)
+    return generateData(30000, 30000, undefined, initIntervalSec)
   })
   const chartRef = React.useRef<TradingChartHandle | null>(null)
 
@@ -46,7 +46,7 @@ function AdvanceChart() {
   React.useEffect(() => {
     const baseTfSec = TF_STR_TO_SEC['1m']
     const basePrice = getBaseForSymbol(symbol)
-    const baseBars = generateFromData(30000, basePrice, undefined, baseTfSec)
+    const baseBars = generateData(30000, basePrice, undefined, baseTfSec)
 
     // 设置单源数据
     cacheManager.setBase(symbol, baseBars, baseTfSec)

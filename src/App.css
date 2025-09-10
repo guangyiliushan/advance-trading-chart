@@ -14,7 +14,7 @@
 
   /* Area series */
   --chart-area-line: oklch(0.56 0.12 240); /* 清爽的蓝色 */
-  --chart-area-top: oklch(0.56 0.12 240 / 0.28); /* 顶部填充稍微饱和些 */
+  --chart-area-top: oklch(0.56 0.12 240.007 / 0.28); /* 顶部填充稍微饱和些 */
   --chart-area-bottom: oklch(0.56 0.12 240 / 0.06);
 
   /* Baseline series (top region = positive, bottom region = negative) */
