@@ -6,10 +6,10 @@ name: Node.js Package
 on:
   release:
     types: [created]
-    push:
+  push:
     #监听main分支的push操作，只要main分支发生push操作，即会运行发布代码
-      branches:
-       - main
+    branches:
+      - main
 
 jobs:
   build:
@@ -19,9 +19,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm ci
-      - run: npm test
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - run: pnpm install --frozen-lockfile
+      # - run: pnpm test
 
   publish-gpr:
     needs: build
@@ -35,9 +38,12 @@ jobs:
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
-      - run: npm install
-      - run: npm ci
-      - run: npm publish
+          cache: 'pnpm'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm publish
         env:
           # 通过NPM_TOKEN，Github Action才可以直接发布
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

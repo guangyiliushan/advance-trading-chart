@@ -16,6 +16,24 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    lib: {
+      entry: path.resolve(__dirname, 'src/index.ts'),
+      name: 'AdvanceTradingChart',
+      fileName: 'index',
+      formats: ['es', 'cjs']
+    },
+    rollupOptions: {
+      external: ['react', 'react-dom', 'lightweight-charts'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          'lightweight-charts': 'LightweightCharts'
+        }
+      }
+    }
+  },
   test: {
     projects: [{
       extends: true,
