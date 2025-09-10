@@ -20,9 +20,12 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.3
+      # 显式启用并激活 pnpm（Corepack）
+      - name: Enable Corepack and activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.12.3 --activate
+      - run: pnpm --version
       - run: pnpm install --frozen-lockfile
       # - run: pnpm test
 
@@ -39,9 +42,12 @@ jobs:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.12.3
+      # 显式启用并激活 pnpm（Corepack）
+      - name: Enable Corepack and activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.12.3 --activate
+      - run: pnpm --version
       - run: pnpm install --frozen-lockfile
       - run: pnpm publish
         env:
