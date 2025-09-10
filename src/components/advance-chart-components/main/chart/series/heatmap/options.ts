@@ -50,7 +50,7 @@ export const defaultOptions: HeatMapSeriesOptions = {
 /**
  * 预测热力图专用选项接口
  */
-export interface PredictionHeatMapOptions extends HeatMapSeriesOptions {
+export interface predictionDataOptions extends HeatMapSeriesOptions {
   /** 预测模式配置 */
   predictionMode: {
     /** 是否启用预测模式 */
@@ -90,7 +90,7 @@ export interface PredictionHeatMapOptions extends HeatMapSeriesOptions {
 /**
  * 预测热力图的默认选项
  */
-export const predictionHeatMapDefaultOptions: PredictionHeatMapOptions = {
+export const predictionDataDefaultOptions: predictionDataOptions = {
   ...defaultOptions,
   predictionMode: {
     enabled: true,

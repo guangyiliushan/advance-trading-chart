@@ -28,6 +28,7 @@ export interface ProbabilityData {
 /**
  * 将价格区间概率数据转换为热力图数据格式
  * 这是数据转换的核心函数，将原始概率数据转换为图表可以理解的格式
+ * 注意：amount 保持为 0~1 的归一化值，以匹配默认的 defaultColorShader（其期望 0~1 输入）
  * @param probabilityDataArray 原始概率数据数组
  * @returns 转换后的热力图数据数组
  */
@@ -42,7 +43,7 @@ export function convertProbabilityToHeatMapData(probabilityDataArray: Probabilit
         .map(bin => ({
           low: bin.lbound,           // 价格区间下边界
           high: bin.rbound,          // 价格区间上边界
-          amount: bin.prob * 100,    // 将概率转换为百分比以便更好地显示颜色强度
+          amount: bin.prob,          // 保持概率为 0~1；默认着色器按 0~1 处理
         }))
     };
   });
@@ -55,7 +56,7 @@ export function convertProbabilityToHeatMapData(probabilityDataArray: Probabilit
  */
 export function generateSampleProbabilityData(): ProbabilityData[] {
   const sampleData: ProbabilityData[] = [];
-  const baseTime = 1700094000; // 2023-11-16 的Unix时间戳作为起始时间
+  const baseTime = Math.floor(Date.now() / 1000); // 获取当前的Unix时间戳作为起始时间
   
   // 生成30天的数据
   for (let day = 0; day < 30; day++) {

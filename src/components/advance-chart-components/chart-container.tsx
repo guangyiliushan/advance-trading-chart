@@ -44,7 +44,7 @@ type ChartContainerProps = {
   // 新增：数据错误回调
   onDataError?: (error: string) => void
   // 新增：预测热力图数据
-  predictionHeatmap?: HeatMapData[]
+  predictionData?: HeatMapData[]
 }
 
 export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContainerProps>(
@@ -65,7 +65,7 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
     enableRealtime = false,
     onDataLoading,
     onDataError,
-    predictionHeatmap,
+    predictionData,
   }, ref) => {
 
     // 本地图表实例引用，既供 Footer 调用，也向外转发
@@ -295,7 +295,7 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
             chartType={chartType}
             autoMode={autoMode}
             className="flex-1 w-full"
-            predictionHeatmap={predictionHeatmap}
+            predictionData={predictionData}
           />
         </div>
         {/* Footer */}

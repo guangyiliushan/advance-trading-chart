@@ -14,7 +14,7 @@ export type MainChartProps = Omit<TradingChartProps,
 > & {
   onChartApi?: TradingChartProps['onChartApi']
   className?: string
-  predictionHeatmap?: TradingChartProps['predictionHeatmap']
+  predictionData?: TradingChartProps['predictionData']
 }
 
 export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(

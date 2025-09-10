@@ -13,7 +13,7 @@ export interface MainProps {
   chartType?: ChartTypeStr
   autoMode?: boolean
   className?: string
-  predictionHeatmap?: HeatMapData[]
+  predictionData?: HeatMapData[]
 }
 
 export const Main = forwardRef<TradingChartHandle, MainProps>(
@@ -25,7 +25,7 @@ export const Main = forwardRef<TradingChartHandle, MainProps>(
       chartType,
       autoMode,
       className,
-      predictionHeatmap,
+      predictionData,
     },
     ref
   ) => {
@@ -45,7 +45,7 @@ export const Main = forwardRef<TradingChartHandle, MainProps>(
           symbol={symbol}
           chartType={chartType}
           autoMode={autoMode}
-          predictionHeatmap={predictionHeatmap}
+          predictionData={predictionData}
         />
         <SettingPanel>
           <button

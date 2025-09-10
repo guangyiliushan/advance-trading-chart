@@ -28,7 +28,7 @@ function AdvanceChartDemo() {
   })
   const chartRef = React.useRef<TradingChartHandle | null>(null)
   // 新增：预测热力图数据（演示生成与转换，暂不透传）
-  const [predictionHeatmap, setPredictionHeatmap] = React.useState<HeatMapData[]>([])
+  const [predictionData, setpredictionData] = React.useState<HeatMapData[]>([])
 
   const symbolOptions = React.useMemo(() => [
     'BTC/USD',
@@ -83,14 +83,14 @@ function AdvanceChartDemo() {
 
   // 新增：当主图数据更新时，生成示例概率数据并转换为热力图数据（仅演示，不透传）
   React.useEffect(() => {
-    if (!data || data.length === 0) {
-      setPredictionHeatmap([])
-      return
-    }
+    // if (!data || data.length === 0) {
+    //   setpredictionData([])
+    //   return
+    // }
     // 这里可以替换为实际的预测概率数据来源
     const sampleProb = generateSampleProbabilityData()
     const heatmap = convertProbabilityToHeatMapData(sampleProb)
-    setPredictionHeatmap(heatmap)
+    setpredictionData(heatmap)
   }, [data, symbol, timeframe])
 
   return (
@@ -110,7 +110,7 @@ function AdvanceChartDemo() {
           onGoLive={() => chartRef.current?.goLive()}
           className="h-full w-full"
           symbolOptions={symbolOptions}
-          predictionHeatmap={predictionHeatmap}
+          predictionData={predictionData}
         />
       </Card>
     </div>
