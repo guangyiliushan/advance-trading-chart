@@ -30,6 +30,8 @@ export type TradingChartProps = {
   children?: React.ReactNode
   // 新增：预测热力图数据（可选）
   predictionData?: HeatMapData[]
+  // 新增：颜色配置覆盖（可选）
+  colorConfig?: Partial<Record<string, string>>
 }
 
 // 对外暴露的实例方法
@@ -42,7 +44,7 @@ export type TradingChartHandle = {
 
 
 export const TradingChart = React.forwardRef(
-  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, enableCrosshairTooltip: _enableCrosshairTooltip = false, onChartApi, containerRef: containerRefProp, children, predictionData }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
+  ({ data, dark, className, symbol, chartType = 'Candlestick', autoMode = true, onChartApi, containerRef: containerRefProp, children, predictionData, colorConfig }: TradingChartProps, ref: React.Ref<TradingChartHandle>) => {
     const internalContainerRef = useRef<HTMLDivElement | null>(null)
     const containerRef = containerRefProp ?? internalContainerRef
     const chartRef = useRef<IChartApi | null>(null)
@@ -58,7 +60,10 @@ export const TradingChart = React.forwardRef(
     const currentVisibleRangeRef = useRef<{ from: Time; to: Time } | null>(null)
     // 新增：标记是否是首次autoMode切换
     const isInitialAutoModeRef = useRef(true)
-    const layoutColors = useMemo(() => getLayoutColors(), [dark])
+    const layoutColors = useMemo(() => {
+      const base = getLayoutColors()
+      return { ...base, ...(colorConfig || {}) }
+    }, [dark, colorConfig])
 
     // Memoize transformed series data for performance and single-source-of-truth
     const memoData = useMemo(() => {

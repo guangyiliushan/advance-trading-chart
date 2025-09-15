@@ -9,6 +9,8 @@ import { Footer } from "./footer/footer"
 import { Main } from "./main/main"
 // 新增：热力图类型
 import type { HeatMapData } from "./main/chart/series/heatmap/data"
+// 新增：统一数据源类型
+import type { UnifiedDataSource } from '@/core/types'
 
 // Add: utility for exiting fullscreen
 const exitFullscreen = () => {
@@ -43,8 +45,19 @@ type ChartContainerProps = {
   onDataLoading?: (loading: boolean) => void
   // 新增：数据错误回调
   onDataError?: (error: string) => void
-  // 新增：预测热力图数据
+  // 新增：预测热力图数据（静态）
   predictionData?: HeatMapData[]
+  // 新增：统一主数据源（历史 + 订阅）
+  mainDataSource?: UnifiedDataSource<ChartData>
+  // 新增：统一预测数据源（历史 + 订阅）
+  predictionDataSource?: UnifiedDataSource<HeatMapData>
+  // 新增：UI 配置（默认值）
+  uiConfig?: {
+    autoModeDefault?: boolean
+    enableCrosshairTooltip?: boolean
+  }
+  // 新增：颜色覆盖
+  colorConfig?: Partial<Record<string, string>>
 }
 
 export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContainerProps>(
@@ -66,6 +79,11 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
     onDataLoading,
     onDataError,
     predictionData,
+    // 新增：统一数据源与 UI / 颜色配置
+    mainDataSource,
+    predictionDataSource,
+    uiConfig,
+    colorConfig,
   }, ref) => {
 
     // 本地图表实例引用，既供 Footer 调用，也向外转发
@@ -74,22 +92,28 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
     // 数据提供者和状态管理
     const dataProviderRef = React.useRef<IDataProvider | null>(null)
     const realtimeUnsubscribeRef = React.useRef<UnsubscribeFunction | null>(null)
- // 数据状态管理
-  const [chartData, setChartData] = React.useState<ChartData[]>(staticData || [])
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [dataError, setDataError] = React.useState<string | null>(null)
+    // 统一数据源的取消订阅引用
+    const mainDsUnsubRef = React.useRef<null | (() => void)>(null)
+    const predDsUnsubRef = React.useRef<null | (() => void)>(null)
 
-  // 通知父组件加载状态变化
-  React.useEffect(() => {
-    onDataLoading?.(isLoading)
-  }, [isLoading, onDataLoading])
+    // 数据状态管理
+    const [chartData, setChartData] = React.useState<ChartData[]>(staticData || [])
+    const [predictionDsData, setPredictionDsData] = React.useState<HeatMapData[] | undefined>(undefined)
+    const [isLoading, setIsLoading] = React.useState(false)
+    const [dataError, setDataError] = React.useState<string | null>(null)
 
-  // 通知父组件错误状态变化
-  React.useEffect(() => {
-    if (onDataError) {
-      onDataError(dataError || '')
-    }
-  }, [dataError, onDataError])
+    // 通知父组件加载状态变化
+    React.useEffect(() => {
+      onDataLoading?.(isLoading)
+    }, [isLoading, onDataLoading])
+
+    // 通知父组件错误状态变化
+    React.useEffect(() => {
+      if (onDataError) {
+        onDataError(dataError || '')
+      }
+    }, [dataError, onDataError])
+
     const fitContent = React.useCallback(() => {
       chartRef.current?.fitContent()
       onFitContent?.()
@@ -114,8 +138,8 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
       return () => document.removeEventListener('keydown', onKeyDown)
     }, [])
 
-    // 自动模式（自动缩放/跟随最新）开关
-    const [autoMode, setAutoMode] = React.useState<boolean>(true)
+    // 自动模式（自动缩放/跟随最新）开关（默认值支持 UI 配置）
+    const [autoMode, setAutoMode] = React.useState<boolean>(uiConfig?.autoModeDefault ?? true)
 
     // Header 选择间隔：认为用户开始手动管理图表时间宽度，清空 Footer 的范围选择
     const handleHeaderTimeframeChange = React.useCallback((v: string) => {
@@ -153,20 +177,18 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
     // 切换自动模式：简化逻辑，主要的范围管理交给trading-chart.tsx处理
     const handleAutoModeChange = React.useCallback((v: boolean) => {
       setAutoMode(v)
-      // 移除原有的范围重置逻辑，让trading-chart.tsx内部处理
       // 只在有明确rangeSpan且开启自动模式时才应用特定范围
       if (v && rangeSpan) {
         chartRef.current?.setVisibleRange(rangeSpan)
       }
-      // 关闭自动：不做额外处理，保持当前可视范围，允许自由移动
     }, [rangeSpan])
 
     // 新增：图表类型本地状态
     const [chartType, setChartType] = React.useState<ChartTypeStr>("Candlestick")
     
-    // 初始化数据提供者
+    // 初始化数据提供者（当未提供 mainDataSource 时才启用自动数据提供者）
     React.useEffect(() => {
-      if (enableAutoData) {
+      if (!mainDataSource && enableAutoData) {
         dataProviderRef.current = createDataProvider()
       }
       return () => {
@@ -176,10 +198,79 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
           realtimeUnsubscribeRef.current = null
         }
       }
-    }, [enableAutoData])
+    }, [enableAutoData, mainDataSource])
     
-    // 获取历史数据
+    // 通过统一接口获取历史数据（主图）并订阅增量
+    React.useEffect(() => {
+      if (!mainDataSource) return
+      // 取消之前的订阅
+      if (mainDsUnsubRef.current) {
+        mainDsUnsubRef.current()
+        mainDsUnsubRef.current = null
+      }
+      setIsLoading(true)
+      setDataError(null)
+      Promise.resolve(mainDataSource.getAll({ symbol, timeframe }))
+        .then((arr) => {
+          setChartData(arr)
+          setIsLoading(false)
+        })
+        .catch((err) => {
+          const msg = err instanceof Error ? err.message : 'Failed to load data'
+          setDataError(msg)
+          setIsLoading(false)
+        })
+      if (mainDataSource.subscribe) {
+        mainDsUnsubRef.current = mainDataSource.subscribe({ symbol, timeframe }, (payload) => {
+          setChartData((prev) => {
+            const appendMany = Array.isArray(payload) ? payload : [payload]
+            // 以 time 为键合并更新/新增
+            const map = new Map<number, ChartData>(prev.map((d) => [Number(d.time), d]))
+            for (const d of appendMany) {
+              map.set(Number(d.time), d as ChartData)
+            }
+            return Array.from(map.values()).sort((a, b) => Number(a.time) - Number(b.time))
+          })
+        })
+      }
+      return () => {
+        if (mainDsUnsubRef.current) {
+          mainDsUnsubRef.current()
+          mainDsUnsubRef.current = null
+        }
+      }
+    }, [symbol, timeframe, mainDataSource])
+
+    // 通过统一接口获取/订阅预测热力图
+    React.useEffect(() => {
+      if (!predictionDataSource) return
+      if (predDsUnsubRef.current) {
+        predDsUnsubRef.current()
+        predDsUnsubRef.current = null
+      }
+      Promise.resolve(predictionDataSource.getAll({ symbol, timeframe }))
+        .then((arr) => setPredictionDsData(arr))
+        .catch(() => setPredictionDsData(undefined))
+      if (predictionDataSource.subscribe) {
+        predDsUnsubRef.current = predictionDataSource.subscribe({ symbol, timeframe }, (payload) => {
+          setPredictionDsData((prev) => {
+            const base = prev ?? []
+            const appendMany = Array.isArray(payload) ? payload : [payload]
+            return [...base, ...appendMany]
+          })
+        })
+      }
+      return () => {
+        if (predDsUnsubRef.current) {
+          predDsUnsubRef.current()
+          predDsUnsubRef.current = null
+        }
+      }
+    }, [symbol, timeframe, predictionDataSource])
+
+    // 获取历史数据（自动数据提供者）
     const fetchHistoricalData = React.useCallback(async (sym: string, tf: string) => {
+      if (mainDataSource) return // 使用统一数据源时，跳过内建数据提供者
       if (!dataProviderRef.current || !enableAutoData) return
       
       setIsLoading(true)
@@ -209,10 +300,11 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
         setIsLoading(false)
         onDataLoading?.(false)
       }
-    }, [enableAutoData, onDataLoading, onDataError])
+    }, [enableAutoData, onDataLoading, onDataError, mainDataSource])
     
-    // 订阅实时数据
+    // 订阅实时数据（自动数据提供者）
     const subscribeRealtimeData = React.useCallback((sym: string, tf: string) => {
+      if (mainDataSource) return // 使用统一数据源时，跳过内建实时
       if (!dataProviderRef.current || !enableRealtime || !dataProviderRef.current.subscribeRealtime) {
         return
       }
@@ -239,27 +331,29 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
       }
       
       realtimeUnsubscribeRef.current = dataProviderRef.current.subscribeRealtime(sym, tf, callback)
-    }, [enableRealtime])
+    }, [enableRealtime, mainDataSource])
     
-    // 当symbol或timeframe变化时，重新获取数据
+    // 当symbol或timeframe变化时，重新获取数据 / 订阅
     React.useEffect(() => {
-      if (enableAutoData) {
+      if (!mainDataSource && enableAutoData) {
         fetchHistoricalData(symbol, timeframe)
       }
-      if (enableRealtime) {
+      if (!mainDataSource && enableRealtime) {
         subscribeRealtimeData(symbol, timeframe)
       }
-    }, [symbol, timeframe, fetchHistoricalData, subscribeRealtimeData, enableAutoData, enableRealtime])
+    }, [symbol, timeframe, fetchHistoricalData, subscribeRealtimeData, enableAutoData, enableRealtime, mainDataSource])
     
-    // 当静态数据变化时，更新图表数据
+    // 当静态数据变化时，更新图表数据（仅当未启用统一数据源与自动数据获取时）
     React.useEffect(() => {
+      if (mainDataSource) return
       if (!enableAutoData && staticData) {
         setChartData(staticData)
       }
-    }, [staticData, enableAutoData])
+    }, [staticData, enableAutoData, mainDataSource])
     
     // 确定最终使用的数据
-    const finalData = enableAutoData ? chartData : (staticData || [])
+    const finalData = mainDataSource ? chartData : (enableAutoData ? chartData : (staticData || []))
+    const finalPredictionData = predictionDataSource ? (predictionDsData || []) : predictionData
 
     return (
       <div className={cn("grid grid-cols-[auto,1fr,auto] grid-rows-[auto,1fr] h-full bg-background", className)}>
@@ -295,7 +389,9 @@ export const ChartContainer = React.forwardRef<TradingChartHandle, ChartContaine
             chartType={chartType}
             autoMode={autoMode}
             className="flex-1 w-full"
-            predictionData={predictionData}
+            predictionData={finalPredictionData}
+            enableCrosshairTooltip={uiConfig?.enableCrosshairTooltip ?? true}
+            colorConfig={colorConfig}
           />
         </div>
         {/* Footer */}

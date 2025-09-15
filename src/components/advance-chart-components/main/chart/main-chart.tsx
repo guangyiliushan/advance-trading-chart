@@ -28,6 +28,7 @@ export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(
       autoMode = true,
       enableCrosshairTooltip = true,
       onChartApi,
+      colorConfig,
       ...rest
     },
     ref
@@ -41,8 +42,8 @@ export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(
     // 捕获 chart 实例传给 tooltip 组件
     const [chartApi, setChartApi] = useState<IChartApi | null>(null)
 
-    // 与 TradingChart 完全一致的颜色系统（来自 CSS 变量）
-    const layoutColors = useMemo(() => getLayoutColors(), [dark])
+    // 与 TradingChart 完全一致的颜色系统（来自 CSS 变量），允许外部覆盖
+    const layoutColors = useMemo(() => ({ ...getLayoutColors(), ...(colorConfig || {}) }), [dark, colorConfig])
 
     const last: ChartData | null = data && data.length > 0 ? (data[data.length - 1] as any) : null
 
@@ -62,6 +63,7 @@ export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(
         // 将容器 ref 传入，以便覆盖层和 tooltip 在同一容器内渲染
         containerRef={containerRef}
         ref={ref}
+        colorConfig={colorConfig}
         {...rest}
       >
         {/* 顶部左侧价格与图例覆盖层（保持与原 TradingChart 完全一致的 UI 与行为） */}
@@ -85,7 +87,7 @@ export const MainChart = React.forwardRef<TradingChartHandle, MainChartProps>(
             locale="zh-CN"
             timeZone="UTC"
             pricePrecision={2}
-            dark={dark}
+            dark={!!dark}
           />
         )}
       </TradingChart>
