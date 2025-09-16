@@ -56,10 +56,14 @@ export const TradingChart = React.forwardRef(
     const programmaticRangeUpdate = useRef(false)
     const pendingSpanRef = useRef<string | null>(null)
     const dataVersionRef = useRef(0)
+    // 新增：挂起范围请求的元信息（记录请求时的数据指纹）
+    const pendingSpanMetaRef = useRef<{ fpAtRequest: string } | null>(null)
     // 新增：保存当前可视范围的ref
     const currentVisibleRangeRef = useRef<{ from: Time; to: Time } | null>(null)
     // 新增：标记是否是首次autoMode切换
     const isInitialAutoModeRef = useRef(true)
+    // 新增：当前数据指纹的 ref（供异步回调读取最新指纹）
+    const dataFingerprintRef = useRef<string>("")
     const layoutColors = useMemo(() => {
       const base = getLayoutColors()
       return { ...base, ...(colorConfig || {}) }
@@ -70,6 +74,19 @@ export const TradingChart = React.forwardRef(
       const { chartData, volumes } = convertChartData(data, chartType, getConvertChartOptions(layoutColors))
       return { chartData, volumes }
     }, [data, chartType, layoutColors])
+
+    // 新增：数据指纹（长度 + 最后一根的时间），用于判断数据是否自某次请求后发生变化
+    const dataFingerprint = useMemo(() => {
+      const len = Array.isArray(memoData.chartData) ? memoData.chartData.length : 0
+      const last = len > 0 ? (memoData.chartData[len - 1] as any) : null
+      const lastTs = last ? (toUnixSeconds(last.time) ?? -1) : -1
+      return `${len}|${lastTs}`
+    }, [memoData.chartData])
+
+    // 保持最新的数据指纹在 ref 中，供 setTimeout 等异步逻辑读取
+    useEffect(() => {
+      dataFingerprintRef.current = dataFingerprint
+    }, [dataFingerprint])
 
     // 计算并应用 Histogram 的动态 base（可视区最小值-100，最低不小于0）
     const updateHistogramBase = React.useCallback(() => {
@@ -110,7 +127,7 @@ export const TradingChart = React.forwardRef(
           vertLines: { color: layoutColors.grid },
         },
         rightPriceScale: { borderVisible: false },
-        timeScale: { borderVisible: false },
+        timeScale: { borderVisible: false,timeVisible: true,secondsVisible: false,},
         localization: { locale: "zh-CN" },
         crosshair: { mode: CrosshairMode.Normal },
       })
@@ -242,17 +259,24 @@ export const TradingChart = React.forwardRef(
 
       // If a range change was requested, apply it AFTER data replacement and anchor to the latest bar time
       if (pendingSpanRef.current) {
-        const span = pendingSpanRef.current
-        const seconds = parseSpanSec(span)
-        const last = memoData.chartData[memoData.chartData.length - 1]
-        const toTs = last ? toUnixSeconds((last as any).time) : null
-        if (seconds && toTs != null) {
-          const fromTs = toTs - seconds
-          programmaticRangeUpdate.current = true
-          chartRef.current.timeScale().setVisibleRange({ from: fromTs as Time, to: toTs as Time })
+        // 只有当数据自请求以来已发生变化时，才应用挂起的范围
+        const fpAtRequest = pendingSpanMetaRef.current?.fpAtRequest
+        const hasDataChanged = !fpAtRequest || fpAtRequest !== dataFingerprint
+        if (hasDataChanged) {
+          const span = pendingSpanRef.current
+          const seconds = parseSpanSec(span)
+          const last = memoData.chartData[memoData.chartData.length - 1]
+          const toTs = last ? toUnixSeconds((last as any).time) : null
+          if (seconds && toTs != null) {
+            const fromTs = toTs - seconds
+            programmaticRangeUpdate.current = true
+            chartRef.current.timeScale().setVisibleRange({ from: fromTs as Time, to: toTs as Time })
+            // 成功应用后清空挂起
+            pendingSpanRef.current = null
+            pendingSpanMetaRef.current = null
+          }
         }
-        // clear pending regardless of success to avoid repeated tries
-        pendingSpanRef.current = null
+        // 如果数据尚未变化，则继续等待下一次数据更新
       } else if (programmaticRangeUpdate.current) {
         // reset the flag so future updates can auto-fit if needed
         programmaticRangeUpdate.current = false
@@ -365,19 +389,24 @@ export const TradingChart = React.forwardRef(
       const chart = chartRef.current
       if (!chart) return
 
-      // record request and try to apply asynchronously so that any concurrent data replacement can happen first
+      // 记录请求与当时的数据指纹，等待数据更新后再应用
       pendingSpanRef.current = span
+      const fpAtRequest = dataFingerprintRef.current
+      pendingSpanMetaRef.current = { fpAtRequest }
       const versionAtRequest = dataVersionRef.current
 
-      // Fallback: if data does not change, apply on next tick, anchoring to the latest bar time
+      // Fallback：若数据没有变化，在短暂延迟后基于当前数据应用（避免与即将到来的数据竞争）
       setTimeout(() => {
-        // if chart unmounted or a newer data version arrived, let the data effect handle it
+        // 若图表已卸载或数据版本已变化，交由数据 effect 处理
         if (!chartRef.current) return
         if (dataVersionRef.current !== versionAtRequest) return
         if (pendingSpanRef.current !== span) return
 
+        // 若数据已变化（指纹不同），交由数据更新 effect 处理
+        if (dataFingerprintRef.current !== fpAtRequest) return
+
         const seconds = parseSpanSec(span)
-        if (!seconds) { pendingSpanRef.current = null; return }
+        if (!seconds) { pendingSpanRef.current = null; pendingSpanMetaRef.current = null; return }
         const last = memoData.chartData[memoData.chartData.length - 1]
         const toTs = last ? toUnixSeconds((last as any).time) : null
         if (toTs == null) return
@@ -385,9 +414,10 @@ export const TradingChart = React.forwardRef(
         const fromTs = toTs - seconds
         // consume the pending span and apply range
         pendingSpanRef.current = null
+        pendingSpanMetaRef.current = null
         programmaticRangeUpdate.current = true
         chartRef.current.timeScale().setVisibleRange({ from: fromTs as Time, to: toTs as Time })
-      }, 0)
+      }, 200)
     }
 
     // 对外暴露的实例方法
