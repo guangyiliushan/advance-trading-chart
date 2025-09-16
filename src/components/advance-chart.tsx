@@ -2,18 +2,8 @@ import * as React from 'react'
 import { Card } from '@/components/ui/card'
 import { ChartContainer } from '@/components/advance-chart-components/chart-container'
 import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
-import { generateData } from '@/core/utils'
 import type { ChartData, UnifiedDataSource } from '@/core/types'
 import type { HeatMapData } from '@/components/advance-chart-components/main/chart/series/heatmap/data'
-import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
-
-// 基于交易对推断一个初始基准价格（仅用于本地 mock 数据）
-function getBaseForSymbol(symbol: string) {
-  return symbol.startsWith('BTC') ? 30000 : symbol.startsWith('ETH') ? 1500 : 80
-}
-
-// 常用周期预热配置（支持按需调整）
-const COMMON_TF_STRS = ['5m', '15m', '1h', '4h', '1d'] as const
 
 // 新增：AdvanceChart 受控/非受控 Props 定义
 interface AdvanceChartProps {
@@ -30,6 +20,8 @@ interface AdvanceChartProps {
   predictionDataSource?: UnifiedDataSource<HeatMapData>
   // 静态预测数据（可选）
   predictionData?: HeatMapData[]
+  // 外部传入的主图数据（静态）
+  data?: ChartData[]
   // UI/颜色配置
   uiConfig?: {
     autoModeDefault?: boolean
@@ -51,6 +43,8 @@ function AdvanceChart(props: AdvanceChartProps) {
     mainDataSource,
     predictionDataSource,
     predictionData,
+    // 新增：外部传入的主图数据
+    data: dataProp,
     uiConfig,
     colorConfig,
     className,
@@ -81,10 +75,6 @@ function AdvanceChart(props: AdvanceChartProps) {
   }, [onRangeSpanChange, rangeSpanProp])
 
   const [dark, setDark] = React.useState(false)
-  const [data, setData] = React.useState<ChartData[]>(() => {
-    const initIntervalSec = timeframe === '1m' ? 60 : timeframe === '5m' ? 300 : timeframe === '1h' ? 3600 : 60
-    return generateData(30000, 30000, undefined, initIntervalSec)
-  })
   const chartRef = React.useRef<TradingChartHandle | null>(null)
 
   const symbolOptions = React.useMemo(() => [
@@ -104,49 +94,12 @@ function AdvanceChart(props: AdvanceChartProps) {
     return () => observer.disconnect()
   }, [])
 
-  // 初始化/切换符号时：构建 base 数据并进行缓存与预热（当未提供 mainDataSource 时启用）
-  React.useEffect(() => {
-    if (mainDataSource) return // 外部数据源接管，跳过本地 mock
-
-    const baseTfSec = TF_STR_TO_SEC['1m']
-    const basePrice = getBaseForSymbol(symbol)
-    const baseBars = generateData(30000, basePrice, undefined, baseTfSec)
-
-    // 设置单源数据
-    cacheManager.setBase(symbol, baseBars, baseTfSec)
-
-    // 按当前 timeframe 拉取聚合数据
-    const tfSec = TF_STR_TO_SEC[timeframe] ?? baseTfSec
-    setData(cacheManager.getForTimeframe(symbol, tfSec))
-
-    // 预热：合并推荐周期与自定义常用周期（仅生成缓存，不触发 UI 变化）
-    const recommended = getWarmupList(baseTfSec)
-    const customList = COMMON_TF_STRS
-      .map((s) => TF_STR_TO_SEC[s])
-      .filter((sec) => typeof sec === 'number' && sec >= baseTfSec) as number[]
-    const warmList = Array.from(new Set<number>([...recommended, ...customList]))
-
-    cacheManager.startWarmup(symbol, warmList, 60_000)
-    return () => {
-      // 停止上一个 symbol 的预热定时器
-      cacheManager.stopWarmup()
-    }
-  }, [symbol, timeframe, mainDataSource])
-
-  // 切换 timeframe 时，仅从缓存/聚合层取数据（未提供 mainDataSource 时）
-  React.useEffect(() => {
-    if (mainDataSource) return
-    const baseTfSec = TF_STR_TO_SEC['1m']
-    const tfSec = TF_STR_TO_SEC[timeframe] ?? baseTfSec
-    setData(cacheManager.getForTimeframe(symbol, tfSec))
-  }, [symbol, timeframe, mainDataSource])
-
   return (
     <div className={"min-h-dvh p-4 md:p-6 bg-background " + (className ?? '')}>
       <Card className="h-[70vh] p-0">
         <ChartContainer 
           ref={chartRef}
-          data={data}
+          data={dataProp}
           dark={dark}
           symbol={symbol}
           timeframe={timeframe}

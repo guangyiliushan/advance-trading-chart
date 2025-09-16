@@ -80,7 +80,8 @@ export class DataManager {
    * 会清空所有缓存
    */
   setBaseBars(bars: ChartData[]): void {
-    this.base = bars.slice();
+    // 按时间升序排序，保证聚合的前提条件
+    this.base = bars.slice().sort((a, b) => Number(a.time as any) - Number(b.time as any));
     this.clearAllCaches();
   }
 
@@ -103,20 +104,61 @@ export class DataManager {
    * 支持增量更新和缓存同步
    */
   applyBaseBar(bar: ChartData): void {
-    // 先追加/修正 base 最后一根
+    const newTs = Number(bar.time as any);
     const last = this.base[this.base.length - 1];
-    if (!last || (last.time as number) < (bar.time as number)) {
+
+    let isRealtimeUpdate = false; // 追加或更新最后一根
+    let isBackfillUpdate = false; // 回填历史（非最后一根）
+
+    if (!last) {
       this.base.push(bar);
+      isRealtimeUpdate = true;
     } else {
-      this.base[this.base.length - 1] = bar;
+      const lastTs = Number(last.time as any);
+      if (newTs > lastTs) {
+        // 新时间，直接追加
+        this.base.push(bar);
+        isRealtimeUpdate = true;
+      } else if (newTs === lastTs) {
+        // 同一时间，替换最后一根（实时修正）
+        this.base[this.base.length - 1] = bar;
+        isRealtimeUpdate = true;
+      } else {
+        // 早于最后一根：查找同时间条替换（避免错误覆盖最后一根）
+        // 由于 base 通常是按时间升序，优先从尾部向前扫描小范围
+        let replaced = false;
+        for (let i = this.base.length - 1; i >= 0; i--) {
+          const ts = Number(this.base[i].time as any);
+          if (ts === newTs) {
+            this.base[i] = bar;
+            replaced = true;
+            break;
+          }
+          if (ts < newTs) {
+            // 已经越过插入点且未找到同时间，视为过期数据，忽略
+            break;
+          }
+        }
+        // 如果替换的是历史位置，则标记为回填更新
+        if (replaced) {
+          isBackfillUpdate = true;
+        } else {
+          // 未找到同时间条，忽略该条，保持数据一致性
+          return;
+        }
+      }
     }
 
-    // 向所有已存在缓存做增量聚合
-    for (const [tf, cache] of this.ohlcCache) {
-      aggregateIncrementalFromBaseBar(cache.d, cache.v, bar, tf);
-      
-      // 级联失效对应的 single cache
-      this.invalidateSingleCacheForTimeframe(tf);
+    if (isRealtimeUpdate) {
+      // 向所有已存在缓存做增量聚合
+      for (const [tf, cache] of this.ohlcCache) {
+        aggregateIncrementalFromBaseBar(cache.d, cache.v, bar, tf);
+        // 级联失效对应的 single cache
+        this.invalidateSingleCacheForTimeframe(tf);
+      }
+    } else if (isBackfillUpdate) {
+      // 历史数据被回填或修正：失效所有缓存，等待按需重新聚合，保证一致性
+      this.clearAllCaches();
     }
   }
 

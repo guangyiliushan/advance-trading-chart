@@ -10,7 +10,7 @@ i18n
   .init({
     returnObjects: true,
     fallbackLng: "zh_CN", // Language to fallback to if the selected is not configured
-    debug: true, // To enable us see errors
+    debug: false, // To enable us see errors
     lng: "zh_CN", // Default language as simplified Chinese
     ns: ["common"],
     defaultNS: "common",
