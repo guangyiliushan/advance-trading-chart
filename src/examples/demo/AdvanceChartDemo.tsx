@@ -1,119 +1,132 @@
 import * as React from 'react'
-import { Card } from '@/components/ui/card'
-import { ChartContainer } from '@/components/advance-chart-components/chart-container'
-import type { TradingChartHandle } from '@/components/advance-chart-components/main/chart/trading-chart'
-import { generateData } from '@/core/utils'
-import type { ChartData } from '@/core/types'
-import { cacheManager, TF_STR_TO_SEC, getWarmupList } from '@/core/cache'
+import  AdvanceChart  from '@/components/advance-chart'
 // 新增：导入热力图类型与概率数据转换工具
 import type { HeatMapData } from '@/components/advance-chart-components/main/chart/series/heatmap/data'
 import { convertProbabilityToHeatMapData, generateSampleProbabilityData } from '@/components/advance-chart-components/main/chart/series/heatmap/probability-data'
-
-// 基于交易对推断一个初始基准价格（仅用于本地 mock 数据）
-function getBaseForSymbol(symbol: string) {
-  return symbol.startsWith('BTC') ? 30000 : symbol.startsWith('ETH') ? 1500 : 80
-}
-
-// 常用周期预热配置（支持按需调整）
-const COMMON_TF_STRS = ['5m', '15m', '1h', '4h', '1d'] as const
+// 新增：导入主图数据类型与示例数据生成工具
+import type { ChartData } from '@/core/types'
+import { generateData } from '@/core/utils'
+// 新增：引入缓存管理与时间框架转换
+import { cacheManager, tfStrToSec } from '@/core/cache'
+// 新增：引入数据提供者（使用模拟提供者以验证1分钟级别实时数据）
+import type { IDataProvider, UnsubscribeFunction } from '@/core/data'
+import { createMockDataProvider } from '@/core/data'
 
 function AdvanceChartDemo() {
+  // 受控：symbol / timeframe / rangeSpan
   const [symbol, setSymbol] = React.useState('BTC/USD')
   const [timeframe, setTimeframe] = React.useState('1m')
   const [rangeSpan, setRangeSpan] = React.useState<string | null>(null)
-  const [dark, setDark] = React.useState(false)
-  const [data, setData] = React.useState<ChartData[]>(() => {
-    const initIntervalSec = timeframe === '1m' ? 60 : timeframe === '5m' ? 300 : timeframe === '1h' ? 3600 : 60
-    return generateData(30000, 30000, undefined, initIntervalSec)
-  })
-  const chartRef = React.useRef<TradingChartHandle | null>(null)
-  // 新增：预测热力图数据（演示生成与转换，暂不透传）
-  const [predictionData, setpredictionData] = React.useState<HeatMapData[]>([])
+  // 示例：预测热力图数据（演示生成与转换，透传到 AdvanceChart）
+  const [predictionData, setPredictionData] = React.useState<HeatMapData[]>([])
+  // 示例：主视图数据（聚合自基准数据）
+  const [data, setData] = React.useState<ChartData[]>([])
 
-  const symbolOptions = React.useMemo(() => [
-    'BTC/USD',
-    'ETH/USD',
-    'SOL/USD',
-  ], [])
+  // 实时订阅与时间框架ref，避免闭包拿到旧值
+  const providerRef = React.useRef<IDataProvider | null>(null)
+  const unsubRef = React.useRef<UnsubscribeFunction | null>(null)
+  const tfRef = React.useRef(timeframe)
+  React.useEffect(() => { tfRef.current = timeframe }, [timeframe])
 
-  // sync dark with theme change via root class
-  React.useEffect(() => {
-    const root = document.documentElement
-    const observer = new MutationObserver(() => {
-      setDark(root.classList.contains('dark'))
-    })
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
-    setDark(root.classList.contains('dark'))
-    return () => observer.disconnect()
+  // 简单的基准价格选择（仅用于 Demo 数据生成）
+  const getBaseForSymbol = React.useCallback((sym: string) => {
+    return sym.startsWith('BTC') ? 30000 : sym.startsWith('ETH') ? 1500 : 80
   }, [])
 
-  // 初始化/切换符号时：构建 base 数据并进行缓存与预热
+  // 当交易对或周期变化时，生成示例概率数据并转换为热力图数据
   React.useEffect(() => {
-    const baseTfSec = TF_STR_TO_SEC['1m']
-    const basePrice = getBaseForSymbol(symbol)
-    const baseBars = generateData(30000, basePrice, undefined, baseTfSec)
-
-    // 设置单源数据
-    cacheManager.setBase(symbol, baseBars, baseTfSec)
-
-    // 按当前 timeframe 拉取聚合数据
-    const tfSec = TF_STR_TO_SEC[timeframe] ?? baseTfSec
-    setData(cacheManager.getForTimeframe(symbol, tfSec))
-
-    // 预热：合并推荐周期与自定义常用周期（仅生成缓存，不触发 UI 变化）
-    const recommended = getWarmupList(baseTfSec)
-    const customList = COMMON_TF_STRS
-      .map((s) => TF_STR_TO_SEC[s])
-      .filter((sec) => typeof sec === 'number' && sec >= baseTfSec) as number[]
-    const warmList = Array.from(new Set<number>([...recommended, ...customList]))
-
-    cacheManager.startWarmup(symbol, warmList, 60_000)
-    return () => {
-      // 停止上一个 symbol 的预热定时器
-      cacheManager.stopWarmup()
-    }
-  }, [symbol])
-
-  // 切换 timeframe 时，仅从缓存/聚合层取数据
-  React.useEffect(() => {
-    const baseTfSec = TF_STR_TO_SEC['1m']
-    const tfSec = TF_STR_TO_SEC[timeframe] ?? baseTfSec
-    setData(cacheManager.getForTimeframe(symbol, tfSec))
-  }, [symbol, timeframe])
-
-  // 新增：当主图数据更新时，生成示例概率数据并转换为热力图数据（仅演示，不透传）
-  React.useEffect(() => {
-    // if (!data || data.length === 0) {
-    //   setpredictionData([])
-    //   return
-    // }
-    // 这里可以替换为实际的预测概率数据来源
     const sampleProb = generateSampleProbabilityData()
     const heatmap = convertProbabilityToHeatMapData(sampleProb)
-    setpredictionData(heatmap)
-  }, [data, symbol, timeframe])
+    setPredictionData(heatmap)
+  }, [symbol, timeframe])
+
+  // 仅在符号变化时：1) 生成一次1m基准数据并预热；2) 启动模拟实时1m订阅，增量追加bar
+  React.useEffect(() => {
+    let cancelled = false
+
+    // 清理上一次订阅与提供者
+    if (unsubRef.current) {
+      try { unsubRef.current() } catch { /* noop */ } finally { unsubRef.current = null }
+    }
+    if (providerRef.current?.disconnect) {
+      providerRef.current.disconnect().catch(() => {/* noop */})
+      providerRef.current = null
+    }
+
+    const run = async () => {
+      // 1) 设置基准数据与预热
+      const base = getBaseForSymbol(symbol)
+      const baseTfSec = tfStrToSec('1m')
+      const baseBars = generateData(800, base, undefined, baseTfSec)
+
+      cacheManager.setBase(symbol, baseBars, baseTfSec)
+      cacheManager.startRecommendedWarmup(symbol)
+
+      // 初始化当前时间框架的聚合数据
+      const currentTfSec = tfStrToSec(tfRef.current)
+      const initial = cacheManager.getForTimeframe(symbol, currentTfSec)
+      if (!cancelled) setData(initial)
+
+      // 2) 启动模拟实时1m数据订阅
+      const provider = createMockDataProvider()
+      providerRef.current = provider
+      if (provider.connect) {
+        try { await provider.connect() } catch { /* noop */ }
+      }
+
+      const unsub = provider.subscribeRealtime?.(symbol, '1m', (bar) => {
+        // 将新bar作为基准1m增量写入缓存，并刷新当前时间框架聚合
+        cacheManager.applyBaseBar(symbol, bar)
+        const tfSec = tfStrToSec(tfRef.current)
+        const arr = cacheManager.getForTimeframe(symbol, tfSec)
+        setData(arr)
+      }) || null
+      unsubRef.current = unsub
+    }
+
+    run()
+
+    // 清理函数：取消订阅并断连
+    return () => {
+      cancelled = true
+      if (unsubRef.current) {
+        try { unsubRef.current() } catch { /* noop */ } finally { unsubRef.current = null }
+      }
+      if (providerRef.current?.disconnect) {
+        providerRef.current.disconnect().catch(() => {/* noop */})
+        providerRef.current = null
+      }
+    }
+  }, [symbol, getBaseForSymbol])
+
+  // 当 timeframe 或 symbol 变更时，仅做聚合，不重新生成基准数据
+  React.useEffect(() => {
+    if (!cacheManager.hasSymbol(symbol)) return
+    const tfSec = tfStrToSec(timeframe)
+    const arr = cacheManager.getForTimeframe(symbol, tfSec)
+    setData(arr)
+  }, [symbol, timeframe])
 
   return (
-    <div className="min-h-dvh p-4 md:p-6 bg-background">
-      <Card className="h-[70vh] p-0">
-        <ChartContainer 
-          ref={chartRef}
-          data={data}
-          dark={dark}
-          symbol={symbol}
-          timeframe={timeframe}
-          rangeSpan={rangeSpan}
-          onRangeSpanChange={setRangeSpan}
-          onSymbolChange={setSymbol}
-          onTimeframeChange={setTimeframe}
-          onFitContent={() => chartRef.current?.fitContent()}
-          onGoLive={() => chartRef.current?.goLive()}
-          className="h-full w-full"
-          symbolOptions={symbolOptions}
-          predictionData={predictionData}
-        />
-      </Card>
-    </div>
+    <AdvanceChart
+      // 受控：交易对与时间周期
+      symbol={symbol}
+      timeframe={timeframe}
+      onSymbolChange={setSymbol}
+      onTimeframeChange={setTimeframe}
+      // 受控：范围选择（可选）
+      rangeSpan={rangeSpan}
+      onRangeSpanChange={setRangeSpan}
+      // 主视图：通过 props 传入外部生成的数据
+      data={data}
+      // 示例：静态预测数据（如无数据源时用于展示）
+      predictionData={predictionData}
+      // UI 与颜色配置示例
+      uiConfig={{ autoModeDefault: true, enableCrosshairTooltip: true }}
+      colorConfig={{ up: '#22c55e', down: '#ef4444' }}
+      // 容器样式（外层）
+      className="min-h-dvh p-4 md:p-6 bg-background"
+    />
   )
 }
 

@@ -1,5 +1,5 @@
 import { Settings } from "lucide-react"
-import { forwardRef, useImperativeHandle } from "react"
+import { forwardRef, useImperativeHandle, useRef } from "react"
 import type { TradingChartHandle } from "./chart/trading-chart"
 import { MainChart } from "./chart/main-chart"
 import { SettingPanel } from "./setting/setting-panel"
@@ -14,6 +14,10 @@ export interface MainProps {
   autoMode?: boolean
   className?: string
   predictionData?: HeatMapData[]
+  // 新增：十字光标提示开关
+  enableCrosshairTooltip?: boolean
+  // 新增：颜色覆盖
+  colorConfig?: Partial<Record<string, string>>
 }
 
 export const Main = forwardRef<TradingChartHandle, MainProps>(
@@ -26,26 +30,33 @@ export const Main = forwardRef<TradingChartHandle, MainProps>(
       autoMode,
       className,
       predictionData,
+      enableCrosshairTooltip,
+      colorConfig,
     },
     ref
   ) => {
+    // 使用内部 ref 持有 TradingChart 实例，并代理暴露方法
+    const innerRef = useRef<TradingChartHandle | null>(null)
+
     useImperativeHandle(ref, () => ({
-      fitContent: () => { },
-      goLive: () => { },
-      setVisibleRange: () => { },
-      enterFullscreen: () => { },
+      fitContent: () => innerRef.current?.fitContent?.(),
+      goLive: () => innerRef.current?.goLive?.(),
+      setVisibleRange: (span: string) => innerRef.current?.setVisibleRange?.(span),
+      enterFullscreen: () => innerRef.current?.enterFullscreen?.(),
     }))
 
     return (
       <div className={className}>
         <MainChart
-          ref={ref}
+          ref={innerRef}
           data={data}
           dark={dark}
           symbol={symbol}
           chartType={chartType}
           autoMode={autoMode}
           predictionData={predictionData}
+          enableCrosshairTooltip={enableCrosshairTooltip}
+          colorConfig={colorConfig}
         />
         <SettingPanel>
           <button

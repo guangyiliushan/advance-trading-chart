@@ -1,8 +1,10 @@
 {
-  "name": "@virtualdomain/advance-trading-chart",
+  "name": "@guangyiliushan/advance-trading-chart",
   "private": false,
-  "version": "0.0.0",
+  "version": "0.0.3",
   "type": "module",
+  "author": "guangyiliushan",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -99,18 +101,33 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417",
   "files": [
-    "src"
+    "dist"
   ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
+    "access": "public"
   },
   "msw": {
     "workerDirectory": [
       "public"
     ]
+  },
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "./dist"
   }
 }
