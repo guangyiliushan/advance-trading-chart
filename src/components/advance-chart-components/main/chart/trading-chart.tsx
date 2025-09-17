@@ -285,7 +285,7 @@ export const TradingChart = React.forwardRef(
           chartRef.current.timeScale().fitContent()
         }
       }
-    }, [layoutColors, memoData, data, dark, symbol, updateHistogramBase, autoMode])
+    }, [layoutColors, dark, symbol, updateHistogramBase, autoMode])
 
     // 新增：监听 predictionData 变化，创建或更新热力图序列
     useEffect(() => {

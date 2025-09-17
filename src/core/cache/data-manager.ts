@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 数据管理器
  * 提供基准数据存储、时间框架聚合、缓存管理等功能

@@ -8,6 +8,9 @@ import type { ChartData } from '@/core/types'
 import { generateData } from '@/core/utils'
 // 新增：引入缓存管理与时间框架转换
 import { cacheManager, tfStrToSec } from '@/core/cache'
+// 新增：引入数据提供者（使用模拟提供者以验证1分钟级别实时数据）
+import type { IDataProvider, UnsubscribeFunction } from '@/core/data'
+import { createMockDataProvider } from '@/core/data'
 
 function AdvanceChartDemo() {
   // 受控：symbol / timeframe / rangeSpan
@@ -18,6 +21,12 @@ function AdvanceChartDemo() {
   const [predictionData, setPredictionData] = React.useState<HeatMapData[]>([])
   // 示例：主视图数据（聚合自基准数据）
   const [data, setData] = React.useState<ChartData[]>([])
+
+  // 实时订阅与时间框架ref，避免闭包拿到旧值
+  const providerRef = React.useRef<IDataProvider | null>(null)
+  const unsubRef = React.useRef<UnsubscribeFunction | null>(null)
+  const tfRef = React.useRef(timeframe)
+  React.useEffect(() => { tfRef.current = timeframe }, [timeframe])
 
   // 简单的基准价格选择（仅用于 Demo 数据生成）
   const getBaseForSymbol = React.useCallback((sym: string) => {
@@ -31,20 +40,63 @@ function AdvanceChartDemo() {
     setPredictionData(heatmap)
   }, [symbol, timeframe])
 
-  // 仅在符号变化时生成一次基准数据（例如使用 1m 作为基准）并进行预热
+  // 仅在符号变化时：1) 生成一次1m基准数据并预热；2) 启动模拟实时1m订阅，增量追加bar
   React.useEffect(() => {
-    const base = getBaseForSymbol(symbol)
-    const baseTfSec = tfStrToSec('1m')
-    const baseBars = generateData(800, base, undefined, baseTfSec)
+    let cancelled = false
 
-    // 设置基准数据到缓存，并启动推荐预热
-    cacheManager.setBase(symbol, baseBars, baseTfSec)
-    cacheManager.startRecommendedWarmup(symbol)
+    // 清理上一次订阅与提供者
+    if (unsubRef.current) {
+      try { unsubRef.current() } catch { /* noop */ } finally { unsubRef.current = null }
+    }
+    if (providerRef.current?.disconnect) {
+      providerRef.current.disconnect().catch(() => {/* noop */})
+      providerRef.current = null
+    }
 
-    // 初始化当前时间框架的聚合数据
-    const currentTfSec = tfStrToSec(timeframe)
-    const initial = cacheManager.getForTimeframe(symbol, currentTfSec)
-    setData(initial)
+    const run = async () => {
+      // 1) 设置基准数据与预热
+      const base = getBaseForSymbol(symbol)
+      const baseTfSec = tfStrToSec('1m')
+      const baseBars = generateData(800, base, undefined, baseTfSec)
+
+      cacheManager.setBase(symbol, baseBars, baseTfSec)
+      cacheManager.startRecommendedWarmup(symbol)
+
+      // 初始化当前时间框架的聚合数据
+      const currentTfSec = tfStrToSec(tfRef.current)
+      const initial = cacheManager.getForTimeframe(symbol, currentTfSec)
+      if (!cancelled) setData(initial)
+
+      // 2) 启动模拟实时1m数据订阅
+      const provider = createMockDataProvider()
+      providerRef.current = provider
+      if (provider.connect) {
+        try { await provider.connect() } catch { /* noop */ }
+      }
+
+      const unsub = provider.subscribeRealtime?.(symbol, '1m', (bar) => {
+        // 将新bar作为基准1m增量写入缓存，并刷新当前时间框架聚合
+        cacheManager.applyBaseBar(symbol, bar)
+        const tfSec = tfStrToSec(tfRef.current)
+        const arr = cacheManager.getForTimeframe(symbol, tfSec)
+        setData(arr)
+      }) || null
+      unsubRef.current = unsub
+    }
+
+    run()
+
+    // 清理函数：取消订阅并断连
+    return () => {
+      cancelled = true
+      if (unsubRef.current) {
+        try { unsubRef.current() } catch { /* noop */ } finally { unsubRef.current = null }
+      }
+      if (providerRef.current?.disconnect) {
+        providerRef.current.disconnect().catch(() => {/* noop */})
+        providerRef.current = null
+      }
+    }
   }, [symbol, getBaseForSymbol])
 
   // 当 timeframe 或 symbol 变更时，仅做聚合，不重新生成基准数据
