@@ -1,3 +1,4 @@
+import { ChartContainer } from '@guangyiliushan/advance-trading-chart'
 import './App.css'
 import AdvanceChartDemo from '@/examples/demo/AdvanceChartDemo'
 
@@ -8,3 +9,4 @@ function App() {
 }
 
 export default App
+export { ChartContainer }

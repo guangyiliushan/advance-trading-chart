@@ -14,15 +14,20 @@ import type { TimeframeSec } from '../types';
  */
 export const TF_STR_TO_SEC: Record<string, TimeframeSec> = {
   '1m': 60,
+  '3m': 180,
   '5m': 300,
   '15m': 900,
   '30m': 1800,
+  // 小时级
   '1h': 3600,
   '3h': 10800,
   '4h': 14400,
   '6h': 21600,
+  '8h': 28800,
   '12h': 43200,
+  // 天/周/月
   '1d': 86400,
+  '3d': 259200,
   '1w': 604800,
   '1M': 2592000,
   '1y': 31536000,
@@ -35,6 +40,17 @@ export const TF_SEC_TO_STR = (sec: TimeframeSec): string => {
   const entry = Object.entries(TF_STR_TO_SEC).find(([, v]) => v === sec);
   return entry ? entry[0] : `${sec}s`;
 };
+
+/**
+ * 字符串转换为秒数（非法输入时抛错）
+ */
+export function tfStrToSec(tfStr: string): TimeframeSec {
+  const v = TF_STR_TO_SEC[tfStr];
+  if (!v) {
+    throw new Error(`Unsupported timeframe string: ${tfStr}`);
+  }
+  return v as TimeframeSec;
+}
 
 /**
  * 获取所有支持的时间框架秒数
@@ -137,19 +153,25 @@ export function getTimeframeDisplayName(tfSec: TimeframeSec): string {
   
   // 特殊处理一些显示名称
   const displayNames: Record<string, string> = {
+    '1s': '1 秒',
+    '5s': '5 秒',
+    '15s': '15 秒',
+    '30s': '30 秒',
     '1m': '1 分钟',
+    '3m': '3 分钟',
     '5m': '5 分钟',
     '15m': '15 分钟',
     '30m': '30 分钟',
     '1h': '1 小时',
-    '3h': '3 小时',
+    '2h': '2 小时',
     '4h': '4 小时',
     '6h': '6 小时',
+    '8h': '8 小时',
     '12h': '12 小时',
     '1d': '1 天',
+    '3d': '3 天',
     '1w': '1 周',
     '1M': '1 月',
-    '1y': '1 年'
   };
   
   return displayNames[tfStr] || tfStr;
