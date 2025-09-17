@@ -63,7 +63,7 @@ function mergeOhlcWithVolumes(ohlc: OhlcData[], vols: HistogramData[]): ChartDat
         high: d.high,
         low: d.low,
         close: d.close,
-      };
+      } as any;
     }
   }
   
@@ -162,17 +162,20 @@ export class CacheManager {
 
   /**
    * 获取指定时间框架的聚合数据
-   * 如果请求的时间框架等于基准时间框架，返回基准数据
+   * 如果请求的时间框架小于或等于基准时间框架，返回基准数据
    */
   getForTimeframe(symbol: string, tfSec: TimeframeSec): ChartData[] {
     const ctx = this.symbolMap.get(symbol);
     if (!ctx) return [];
     
-    if (tfSec <= ctx.baseTfSec) {
-      // 如果请求的时间框架小于或等于基准时间框架，返回基准数据
-      // 不支持向下缩放，保持一致性
+    const baseMerged = (() => {
       const { d, v } = ctx.dm.getOhlc(ctx.baseTfSec);
       return mergeOhlcWithVolumes(d, v);
+    })();
+
+    if (tfSec <= ctx.baseTfSec) {
+      // 不向下缩放，直接返回基准聚合结果
+      return baseMerged;
     }
     
     const { d, v } = ctx.dm.getOhlc(tfSec);

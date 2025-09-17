@@ -134,3 +134,26 @@ export interface PredictionDataSource extends DataSource {
   /** 订阅实时预测数据 */
   subscribePredictionRealtime?(symbol: string, timeframe: string, callback: (data: PredictionData) => void): () => void;
 }
+
+/**
+ * 统一数据源参数（用于 getAll / subscribe）
+ */
+export interface UnifiedStreamParams {
+  symbol: string;
+  timeframe: string;
+  from?: number;
+  to?: number;
+}
+
+/**
+ * 统一数据源接口（推荐外部数据接入模式）
+ * - getAll 返回全量数组
+ * - subscribe 增量推送（单条或数组），返回取消订阅函数
+ */
+export interface UnifiedDataSource<T> {
+  getAll(params: Omit<UnifiedStreamParams, 'from' | 'to'> & Partial<Pick<UnifiedStreamParams, 'from' | 'to'>>): Promise<T[]>;
+  subscribe?: (
+    params: Omit<UnifiedStreamParams, 'from' | 'to'>,
+    callback: (payload: T | T[]) => void
+  ) => () => void;
+}
